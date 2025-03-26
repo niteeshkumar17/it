@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram • Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #000;
+            color: #fff;
+            min-height: 100vh;
+            margin: 0;
+            padding-top: 60px;
+        }
+        
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 935px;
+            width: 100%;
+            padding: 20px;
+            margin: 32px auto;
+        }
+        
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            background: #000;
+            border: 1px solid #262626;
+            border-radius: 1px;
+            padding: 20px 40px;
+            text-align: center;
+            width: 100%;
+            max-width: 350px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            margin: 22px auto 12px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .logo-dark {
+            width: 175px !important;
+            height: 51px !important;
+            object-fit: contain !important;        
+        }
+        
+        .logo-dark {
+            display: block;
+        }
+        
+        .form {
+            margin-top: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .input-group {
+            margin-bottom: 6px;
+            position: relative;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 8px;
+            background: #121212;
+            border: 1px solid #262626;
+            border-radius: 3px;
+            font-size: 12px;
+            line-height: 18px;
+            color: #fff;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #555;
+        }
+        
+        .login-button {
+            margin-top: 8px;
+            background-color: #0095f6;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-weight: 600;
+            padding: 7px 9px;
+            cursor: pointer;
+            font-size: 14px;
+            height: 32px;
+        }
+        
+        .separator {
+            display: flex;
+            align-items: center;
+            margin: 18px 0;
+        }
+        
+        .separator-line {
+            flex-grow: 1;
+            height: 1px;
+            background-color: #262626;
+        }
+        
+        .separator-text {
+            margin: 0 18px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #8e8e8e;
+            text-transform: uppercase;
+        }
+        
+        .facebook-login {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1877f2;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 8px 0;
+            text-decoration: none;
+        }
+        
+        .facebook-icon {
+            margin-right: 8px;
+            width: 16px;
+            height: 16px;
+            color: #1877f2;
+        }
+        
+        .forgot-password {
+            color: #ffffff;
+            font-size: 12px;
+            line-height: 16px;
+            margin-top: 12px;
+            text-align: center;
+            text-decoration: none;
+        }
+        
+        .signup-container {
+            background: #000;
+            border: 1px solid #262626;
+            border-radius: 1px;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+            max-width: 350px;
+            margin: 10px auto;
+        }
+        
+        .signup-text {
+            color: #a8a8a8;
+            font-size: 14px;
+        }
+        
+        .signup-link {
+            color: #0095f6;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        
+        .app-text {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 14px;
+            color: #a8a8a8;
+        }
+        
+        .app-download {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .app-button {
+            display: inline-block;
+            height: 40px;
+            width: 135px;
+            background: #000;
+            border-radius: 5px;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+        
+        .google-play-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            color: white;
+            text-decoration: none;
+            background: #000;
+            padding: 0 8px;
+        }
+
+        .microsoft-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            color: white;
+            text-decoration: none;
+            background: #000;
+        }
+        
+        .google-play-logo {
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-placeholder {
+            width: 44px;
+            height: 34px;
+            display: block;
+        }
+
+        .microsoft-logo {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+        }
+        
+        .button-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .small-text {
+            font-size: 8px;
+            margin-bottom: -2px;
+            color: #ccc;
+        }
+        
+        .large-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .footer {
+            margin: 40px 0;
+            text-align: center;
+        }
+        
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .footer-link {
+            color: #8e8e8e;
+            font-size: 12px;
+            margin: 0 8px 12px;
+            text-decoration: none;
+        }
+        
+        .copyright {
+            color: #8e8e8e;
+            font-size: 12px;
+        }
+        
+        .language-selector {
+            color: #8e8e8e;
+            font-size: 12px;
+            margin-right: 10px;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #000;
+            border-bottom: 1px solid #262626;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            height: 60px;
+            box-sizing: border-box;
+            justify-content: space-between;
+        }
+
+        .home-button {
+            color: #fff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .home-icon {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .donate-button {
+            color: #fff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            background: #0095f6;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .donate-button:hover {
+            background: #0081d6;
+        }
+
+        .donate-icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        .upi-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #262626;
+            padding: 25px;
+            border-radius: 12px;
+            z-index: 1001;
+            width: 90%;
+            max-width: 420px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -45%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
+        .upi-popup.show {
+            display: block;
+        }
+
+        .upi-popup h3 {
+            color: #fff;
+            margin-bottom: 20px;
+            font-size: 18px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .upi-option {
+            background: #333;
+            padding: 15px;
+            margin: 12px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid transparent;
+        }
+
+        .upi-option:hover {
+            background: #3a3a3a;
+            border-color: #0095f6;
+            transform: translateY(-2px);
+        }
+
+        .upi-details {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .upi-option p {
+            margin: 0;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .upi-option .upi-id {
+            color: #0095f6;
+            font-weight: 500;
+            font-size: 13px;
+            margin-top: 3px;
+            word-break: break-all;
+        }
+
+        .close-popup {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            color: #8e8e8e;
+            cursor: pointer;
+            font-size: 22px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+
+        .close-popup:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .upi-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            background: #fff;
+            padding: 4px;
+        }
+
+        .qr-code {
+            width: 90px;
+            height: 90px;
+            border-radius: 4px;
+            border: 1px solid #4a4a4a;
+        }
+
+        .copy-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            z-index: 1002;
+            display: none;
+            font-size: 14px;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; bottom: 0; }
+            to { opacity: 1; bottom: 20px; }
+        }
+
+        /* Responsive adjustments */
+        @media screen and (max-width: 480px) {
+            .upi-option {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .upi-details {
+                margin-bottom: 10px;
+            }
+            
+            .qr-code {
+                align-self: flex-end;
+                width: 80px;
+                height: 80px;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .main-container {
+                margin: 20px auto;
+                padding: 10px;
+            }
+            
+            body {
+                padding-top: 50px;
+            }
+            
+            .navbar {
+                height: 50px;
+            }
+
+            .nav-buttons {
+                gap: 10px;
+            }
+            
+            .donate-button {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+        }
+
+        /* Updated mobile-specific styles */
+        @media screen and (max-width: 768px) {
+            .upi-popup {
+                width: 95% !important;
+                padding: 15px !important;
+                max-width: none !important;
+            }
+            
+            .upi-option {
+                flex-direction: column !important;
+                padding: 12px !important;
+            }
+            
+            .upi-details {
+                width: 100%;
+                margin-bottom: 12px;
+            }
+            
+            .qr-code {
+                width: 100% !important;
+                height: auto !important;
+                max-width: 150px;
+                margin: 10px auto 0 !important;
+                display: block;
+            }
+            
+            .upi-option p {
+                font-size: 13px !important;
+            }
+            
+            .upi-option .upi-id {
+                font-size: 12px !important;
+            }
+            
+            .upi-popup h3 {
+                font-size: 16px !important;
+                margin-bottom: 15px !important;
+            }
+            
+            .upi-icon {
+                width: 30px !important;
+                height: 30px !important;
+            }
+            
+            .copy-notification {
+                width: 90%;
+                text-align: center;
+                padding: 10px;
+                font-size: 13px;
+            }
+        }
+
+        /* Additional small-screen improvements */
+        @media screen and (max-width: 480px) {
+            .login-container, .signup-container {
+                max-width: 100% !important;
+                padding: 20px 15px !important;
+                border: none !important;
+            }
+            
+            .navbar {
+                padding: 10px !important;
+            }
+            
+            .donate-button {
+                padding: 6px 10px !important;
+                font-size: 12px !important;
+            }
+            
+            .home-button span {
+                display: none;
+            }
+            
+            .home-icon {
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="home-button">
+            <svg class="home-icon" viewBox="0 0 24 24">
+                <path d="M9.005 16.545a2.997 2.997 0 012.997-2.997h0A2.997 2.997 0 0115 16.545V22h7V11.543L12 2 2 11.543V22h7.005z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"/>
+            </svg>
+            Home
+        </a>
+        <div class="nav-buttons">
+            <button class="donate-button" onclick="showUPIPopup()">
+                <svg class="donate-icon" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                </svg>
+                Donate
+            </button>
+        </div>
+    </nav>
+
+    <!-- Add overlay and popup -->
+    <div class="overlay" id="overlay" onclick="hideUPIPopup()"></div>
+    <div class="upi-popup" id="upiPopup">
+        <button class="close-popup" onclick="hideUPIPopup()">×</button>
+        <h3>Support My Work with UPI</h3>
+        <div class="upi-option" onclick="copyUPI('niteeshkumarbanks-1@okicici')">
+            <div class="upi-details">
+                <img src="images/gpay_icon.png" alt="Google Pay" class="upi-icon">
+                <div>
+                    <p>Google Pay</p>
+                    <p class="upi-id">niteeshkumarbanks-1@okicici</p>
+                </div>
+            </div>
+            <img src="images/google_pay_qr.jpg" alt="Google Pay QR Code" class="qr-code">
+        </div>
+    </div>
+
+    <div class="copy-notification" id="copyNotification">UPI ID copied to clipboard!</div>
+
+    <div class="main-container">
+        <div class="login-container">
+            <div class="logo">
+                <!-- Using placeholder images for demonstration -->
+                <img class="logo-dark" src="images/instagram_white1.png" alt="Instagram Logo (Dark Mode)" width="195" height="71"" />
+            </div>
+            <div class="form">
+                <div class="input-group">
+                    <input type="text" placeholder="Phone number, username, or email" aria-label="Phone number, username, or email">
+                </div>
+                <div class="input-group">
+                    <input type="password" placeholder="Password" aria-label="Password">
+                </div>
+                <button class="login-button">Log in</button>
+            </div>
+            <div class="separator">
+                <div class="separator-line"></div>
+                <div class="separator-text">OR</div>
+                <div class="separator-line"></div>
+            </div>
+            <a href="#" class="facebook-login">
+                <svg class="facebook-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 12C22 6.48 17.52 2 12 2C6.48 2 2 6.48 2 12C2 16.84 5.44 20.87 10 21.8V15H8V12H10V9.5C10 7.57 11.57 6 13.5 6H16V9H14C13.45 9 13 9.45 13 10V12H16V15H13V21.95C18.05 21.45 22 17.19 22 12Z" fill="#1877f2"/>
+                </svg>
+                Log in with Facebook
+            </a>
+            <a href="#" class="forgot-password">Forgot password?</a>
+        </div>
+        
+        <div class="signup-container">
+            <p class="signup-text">
+                Don't have an account? <a href="#" class="signup-link">Sign up</a>
+            </p>
+        </div>
+        
+        <div class="app-text">Get the app.</div>
+        <div class="app-download">
+            <div class="app-button">
+                <a href="#" class="google-play-button">
+                    <div class="google-play-logo">
+                        <img class="logo-placeholder" src="images/Google_Play-logo.png" alt="Google Play">
+                    </div>
+                    <div class="button-text">
+                        <span class="small-text">GET IT ON</span>
+                        <span class="large-text">Google Play</span>
+                    </div>
+                </a>
+            </div>
+            <div class="app-button">
+                <a href="#" class="microsoft-button">
+                    <svg class="microsoft-logo" viewBox="0 0 23 23">
+                        <rect x="1" y="1" width="10" height="10" fill="#f25022"/>
+                        <rect x="12" y="1" width="10" height="10" fill="#7fba00"/>
+                        <rect x="1" y="12" width="10" height="10" fill="#00a4ef"/>
+                        <rect x="12" y="12" width="10" height="10" fill="#ffb900"/>
+                    </svg>
+                    <div class="button-text">
+                        <span class="small-text">GET IT FROM</span>
+                        <span class="large-text">Microsoft</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-links">
+                <a href="#" class="footer-link">Meta</a>
+                <a href="#" class="footer-link">About</a>
+                <a href="#" class="footer-link">Blog</a>
+                <a href="#" class="footer-link">Jobs</a>
+                <a href="#" class="footer-link">Help</a>
+                <a href="#" class="footer-link">API</a>
+                <a href="#" class="footer-link">Privacy</a>
+                <a href="#" class="footer-link">Terms</a>
+                <a href="#" class="footer-link">Locations</a>
+                <a href="#" class="footer-link">Instagram Lite</a>
+                <a href="#" class="footer-link">Threads</a>
+                <a href="#" class="footer-link">Contact Uploading & Non-Users</a>
+                <a href="#" class="footer-link">Meta Verified</a>
+            </div>
+            <div>
+                <span class="language-selector">English ▾</span>
+                <span class="copyright">© 2025 Instagram from Meta</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showUPIPopup() {
+            document.getElementById('upiPopup').classList.add('show');
+            document.getElementById('overlay').classList.add('show');
+        }
+
+        function hideUPIPopup() {
+            document.getElementById('upiPopup').classList.remove('show');
+            document.getElementById('overlay').classList.remove('show');
+        }
+
+        function copyUPI(upiId) {
+            navigator.clipboard.writeText(upiId).then(() => {
+                const notification = document.getElementById('copyNotification');
+                notification.style.display = 'block';
+                
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+                
+            }).catch(err => {
+                console.error('Failed to copy UPI ID:', err);
+                alert('Failed to copy UPI ID. Please copy it manually.');
+            });
+        }
+    </script>
+</body>
+</html>
