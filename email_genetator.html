@@ -697,8 +697,8 @@
 
     <!-- Banner -->
     <div class="banner">
-        <h1>Temporary Email Generator</h1>
-        <p>Generate temporary email addresses instantly for secure communication</p>
+        <h1>Human-Like Temporary Email Generator</h1>
+        <p>Generate realistic-looking temporary email addresses for secure communication</p>
     </div>
 
     <!-- Main Content -->
@@ -771,17 +771,75 @@
         let emails = [];
         let refreshInterval;
 
-        // Generate a random email address using your domain
+        // Function to get word lists for email generation
+        function getWordLists() {
+            const adjectives = [
+                'quick', 'lazy', 'sleepy', 'happy', 'blue', 'green', 'fast', 'silent', 'dark', 'bright',
+                'clever', 'brave', 'calm', 'eager', 'gentle', 'jolly', 'kind', 'proud', 'silly', 'witty',
+                'tiny', 'huge', 'red', 'purple', 'fresh', 'tasty', 'sharp', 'round', 'cold', 'hot',
+                'smooth', 'rough', 'soft', 'warm', 'cool', 'sweet', 'sour', 'loud', 'quiet', 'old',
+                'new', 'clean', 'dirty', 'heavy', 'light', 'thick', 'thin', 'wide', 'narrow', 'tall',
+                'short', 'long', 'deep', 'shallow', 'strong', 'weak', 'rich', 'poor', 'empty', 'full'
+            ];
+            
+            const nouns = [
+                'fox', 'dog', 'cat', 'sun', 'moon', 'river', 'tree', 'sky', 'sea', 'star',
+                'bird', 'wolf', 'bear', 'fish', 'lion', 'tiger', 'rose', 'wind', 'leaf', 'snow',
+                'boat', 'ship', 'car', 'hat', 'key', 'pen', 'box', 'cup', 'desk', 'chair',
+                'book', 'phone', 'house', 'door', 'window', 'garden', 'beach', 'mountain', 'cloud', 'stone',
+                'flame', 'wave', 'storm', 'light', 'shadow', 'dream', 'song', 'dance', 'smile', 'heart',
+                'soul', 'mind', 'spirit', 'magic', 'peace', 'joy', 'hope', 'faith', 'love', 'life'
+            ];
+            
+            return { adjectives, nouns };
+        }
+
+        // Generate a human-like email address using adjective + noun + number pattern
+        function generateHumanLikeEmail() {
+            try {
+                const { adjectives, nouns } = getWordLists();
+
+                // Pick random parts
+                const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+                const noun = nouns[Math.floor(Math.random() * nouns.length)];
+                const num = Math.floor(10 + Math.random() * 990); // Random number between 10 and 999
+
+                // Different patterns for variety
+                const patterns = [
+                    `${adj}.${noun}${num}`,           // quick.fox123
+                    `${adj}${noun}${num}`,            // quickfox123  
+                    `${adj}_${noun}${num}`,           // quick_fox123
+                    `${adj}-${noun}${num}`,           // quick-fox123
+                    `${adj}${noun}`,                  // quickfox
+                    `${adj}.${noun}`,                 // quick.fox
+                    `${adj}_${noun}`,                 // quick_fox
+                    `${noun}${adj}${num}`,            // foxquick123
+                    `${noun}.${adj}${num}`,           // fox.quick123
+                    `${adj}${num}${noun}`             // quick123fox
+                ];
+
+                const selectedPattern = patterns[Math.floor(Math.random() * patterns.length)];
+                const username = selectedPattern.toLowerCase();
+                
+                return `${username}@${DOMAIN}`;
+            } catch (error) {
+                console.error('Error generating human-like email:', error);
+                // Fallback to simple random string if word lists fail
+                const randomString = Math.random().toString(36).substring(2, 12);
+                return `${randomString}@${DOMAIN}`;
+            }
+        }
+
+        // Generate email function - now uses human-like generation
         function generateEmail() {
-            const randomString = Math.random().toString(36).substring(2, 12); // Longer random string
-            currentEmail = `${randomString}@${DOMAIN}`;
+            currentEmail = generateHumanLikeEmail();
             
             document.getElementById('emailDisplay').textContent = currentEmail;
             document.getElementById('copyBtn').disabled = false;
             document.getElementById('refreshBtn').disabled = false;
             document.getElementById('deleteBtn').disabled = false;
             
-            showMessage('Email generated successfully! 🎉', 'success');
+            showMessage('Human-like email generated successfully! 🎉', 'success');
             
             // Clear previous emails
             emails = [];
@@ -925,7 +983,7 @@
                     <div class="loading">
                         <p>No emails yet. Send an email to <strong>${currentEmail || 'your temporary address'}</strong> to test!</p>
                         <p style="margin-top: 10px; font-size: 0.9rem; color: #6c757d;">
-                            💡 Tip: Use this address for signups, downloads, or any service that requires email verification.
+                            💡 Tip: Use this realistic-looking address for signups, downloads, or any service that requires email verification.
                         </p>
                     </div>
                 `;
@@ -1108,9 +1166,13 @@
         
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('TempMail Pro initialized');
+            console.log('TempMail Pro with Human-like Emails initialized');
             console.log('Domain:', DOMAIN);
             console.log('Script URL:', SCRIPT_URL);
+            console.log('Available word combinations:', (function() {
+                const { adjectives, nouns } = getWordLists();
+                return adjectives.length * nouns.length * 10 * 990;
+            })());
             
             // Update email list
             updateEmailList();
@@ -1124,12 +1186,38 @@
             console.log('Domain:', DOMAIN);
             console.log('Script URL:', SCRIPT_URL);
             console.log('Auto-refresh active:', !!refreshInterval);
+            console.log('Available combinations:', (function() {
+                const { adjectives, nouns } = getWordLists();
+                return adjectives.length * nouns.length * 10 * 990;
+            })());
         }
 
-        // Make debug function available globally
+        // Function to generate multiple examples (for testing)
+        function generateExamples() {
+            console.log('=== EMAIL EXAMPLES ===');
+            for (let i = 0; i < 15; i++) {
+                console.log(generateHumanLikeEmail());
+            }
+        }
+
+        // Function to show word list stats
+        function getWordStats() {
+            const { adjectives, nouns } = getWordLists();
+            console.log('=== WORD STATISTICS ===');
+            console.log('Adjectives:', adjectives.length);
+            console.log('Nouns:', nouns.length);
+            console.log('Pattern variations:', 10);
+            console.log('Total possible combinations:', adjectives.length * nouns.length * 10 * 990);
+            console.log('Unique combinations with numbers:', adjectives.length * nouns.length * 990);
+        }
+
+        // Make debug functions available globally
         window.debugInfo = debugInfo;
+        window.generateExamples = generateExamples;
+        window.getWordStats = getWordStats;
         
-        console.log('TempMail Pro loaded. Type debugInfo() in console for debugging.');
+        console.log('TempMail Pro with Word-Based Email Generation loaded.');
+        console.log('Available functions: debugInfo(), generateExamples(), getWordStats()');
     </script>
 </body>
 </html>
