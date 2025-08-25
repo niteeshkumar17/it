@@ -991,49 +991,101 @@
             }
             
             emailList.innerHTML = emails.map(email => `
-                <div class="email-item ${!email.read ? 'unread' : ''}" onclick="openEmail('${email.id}')">
+                <div class="email-item ${!email.read ? 'unread' : ''}" onclick="openEmail('${email.id}')" style="position: relative;">
                     <div class="email-meta">
                         <span class="email-from">${escapeHtml(email.from)}</span>
                         <span class="email-time">${formatTime(email.timestamp)}</span>
                     </div>
                     <div class="email-subject">${escapeHtml(email.subject)}</div>
                     <div class="email-preview">${escapeHtml(truncateText(email.body, 100))}</div>
+                    <div class="email-loading" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.9); padding: 10px; border-radius: 5px;">
+                        <div class="spinner" style="width: 20px; height: 20px; margin: 0 auto 5px;"></div>
+                        <small>Opening...</small>
+                    </div>
                 </div>
             `).join('');
         }
 
+        // Track modal state to prevent multiple opens
+        let isModalOpening = false;
+        let isModalOpen = false;
+
         // Open email in modal
         async function openEmail(emailId) {
+            // Prevent multiple simultaneous opens
+            if (isModalOpening || isModalOpen) {
+                console.log('Modal already opening or open, ignoring click');
+                return;
+            }
+
             const email = emails.find(e => e.id === emailId);
             if (!email) return;
             
-            // Mark as read locally
-            email.read = true;
-            updateEmailList();
+            // Set opening state
+            isModalOpening = true;
             
-            // Mark as read on server
-            try {
-                await fetch(`${SCRIPT_URL}?action=markAsRead&emailId=${encodeURIComponent(emailId)}&email=${encodeURIComponent(currentEmail)}`);
-            } catch (error) {
-                console.error('Failed to mark email as read on server:', error);
-            }
-            
-            document.getElementById('modalSubject').textContent = email.subject;
+            // Show loading state in modal
+            document.getElementById('modalSubject').textContent = 'Loading...';
             document.getElementById('modalContent').innerHTML = `
-                <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #e9ecef;">
-                    <strong>From:</strong> ${escapeHtml(email.from)}<br>
-                    <strong>To:</strong> ${escapeHtml(currentEmail)}<br>
-                    <strong>Date:</strong> ${formatFullTime(email.timestamp)}
+                <div style="text-align: center; padding: 40px;">
+                    <div class="spinner"></div>
+                    <p>Loading email content...</p>
                 </div>
-                <div style="line-height: 1.6; white-space: pre-wrap;">${escapeHtml(email.body)}</div>
             `;
             
+            // Show modal immediately with loading state
             document.getElementById('emailModal').style.display = 'block';
+            isModalOpen = true;
+            
+            try {
+                // Mark as read locally
+                email.read = true;
+                updateEmailList();
+                
+                // Mark as read on server (in background)
+                fetch(`${SCRIPT_URL}?action=markAsRead&emailId=${encodeURIComponent(emailId)}&email=${encodeURIComponent(currentEmail)}`)
+                    .catch(error => console.error('Failed to mark email as read on server:', error));
+                
+                // Simulate minimum loading time for better UX (optional)
+                await new Promise(resolve => setTimeout(resolve, 200));
+                
+                // Update modal content
+                document.getElementById('modalSubject').textContent = email.subject;
+                document.getElementById('modalContent').innerHTML = `
+                    <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #e9ecef;">
+                        <strong>From:</strong> ${escapeHtml(email.from)}<br>
+                        <strong>To:</strong> ${escapeHtml(currentEmail)}<br>
+                        <strong>Date:</strong> ${formatFullTime(email.timestamp)}
+                    </div>
+                    <div style="line-height: 1.6; white-space: pre-wrap;">${escapeHtml(email.body)}</div>
+                `;
+                
+            } catch (error) {
+                console.error('Error opening email:', error);
+                document.getElementById('modalContent').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #dc3545;">
+                        <p>❌ Error loading email content</p>
+                        <p style="font-size: 0.9rem; color: #6c757d;">Please try again</p>
+                    </div>
+                `;
+            } finally {
+                // Reset opening state
+                isModalOpening = false;
+            }
         }
 
         // Close email modal
         function closeModal() {
-            document.getElementById('emailModal').style.display = 'none';
+            const modal = document.getElementById('emailModal');
+            if (!modal || modal.style.display === 'none') {
+                return; // Modal already closed
+            }
+            
+            modal.style.display = 'none';
+            isModalOpen = false;
+            isModalOpening = false; // Reset this too in case it got stuck
+            
+            console.log('Modal closed');
         }
 
         // Delete current email
@@ -1156,10 +1208,17 @@
         // Close modal when clicking outside
         window.onclick = function(event) {
             const modal = document.getElementById('emailModal');
-            if (event.target === modal) {
+            if (event.target === modal && !isModalOpening) {
                 closeModal();
             }
         }
+
+        // Add escape key handler to close modal
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && isModalOpen && !isModalOpening) {
+                closeModal();
+            }
+        });
 
         // Clean up on page unload
         window.addEventListener('beforeunload', stopAutoRefresh);
