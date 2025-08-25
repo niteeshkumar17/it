@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TempMail - Niteesh Kumar</title>
+    <title>TempMail Pro - Niteesh Kumar</title>
     <style>
         /* Base Styles */
         :root {
@@ -763,7 +763,7 @@
 
     <script>
         // Configuration - Your actual Google Apps Script URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvDZNV5uHRQxk3z_uPmmrF0Y2I1XxpQbDSngtwKPf-r-qsUc0PDsKsWzzzJ2Ny-fy8yg/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx99sInyTLWuksySemkkkoq148tOFt263G08DTZSKFEtBHm_tpSGhjubLqi3xDRRn02/exec';
         const DOMAIN = 'niteeshkumar.online'; // Your actual domain
         
         let currentEmail = '';
@@ -839,7 +839,7 @@
             document.getElementById('refreshBtn').disabled = false;
             document.getElementById('deleteBtn').disabled = false;
             
-            showMessage('Human-like email generated successfully! 🎉', 'success');
+            showMessage('Email generated successfully! 🎉', 'success');
             
             // Clear previous emails
             emails = [];
@@ -909,7 +909,7 @@
 
         function startRefreshCountdown() {
             const refreshBtn = document.getElementById('refreshBtn');
-            let countdown = 60;
+            let countdown = 15;
             
             refreshBtn.disabled = true;
             clearInterval(countdownInterval); // Clear any old timers
@@ -936,14 +936,11 @@
             if (!currentEmail) return;
 
             const refreshBtn = document.getElementById('refreshBtn');
-    
-            // Don't do anything if a countdown is already active
+            
             if (refreshBtn.disabled) return;
-    
-            // 1. Start the countdown IMMEDIATELY.
+            
             startRefreshCountdown();
 
-            // 2. Perform the email check in the background.
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=getEmails&email=${encodeURIComponent(currentEmail)}&v=${new Date().getTime()}`, {
                     method: 'GET',
@@ -959,15 +956,14 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    emails = data.emails || [];
+                    emails = data.data || []; 
                 } else {
                     console.error('Failed to fetch emails:', data.message);
                 }
             } catch (error) {
                 console.error('Error fetching emails:', error);
             }
-    
-            // 3. Update the display when the check is complete.
+
             updateEmailList();
         }
 
@@ -1012,7 +1008,6 @@
 
         // Open email in modal
         async function openEmail(emailId) {
-            // Prevent multiple simultaneous opens
             if (isModalOpening || isModalOpen) {
                 console.log('Modal already opening or open, ignoring click');
                 return;
@@ -1021,10 +1016,8 @@
             const email = emails.find(e => e.id === emailId);
             if (!email) return;
             
-            // Set opening state
             isModalOpening = true;
             
-            // Show loading state in modal
             document.getElementById('modalSubject').textContent = 'Loading...';
             document.getElementById('modalContent').innerHTML = `
                 <div style="text-align: center; padding: 40px;">
@@ -1033,12 +1026,10 @@
                 </div>
             `;
             
-            // Show modal immediately with loading state
             document.getElementById('emailModal').style.display = 'block';
             isModalOpen = true;
             
             try {
-                // Mark as read locally
                 email.read = true;
                 updateEmailList();
                 
@@ -1046,7 +1037,6 @@
                 fetch(`${SCRIPT_URL}?action=markAsRead&emailId=${encodeURIComponent(emailId)}&email=${encodeURIComponent(currentEmail)}`)
                     .catch(error => console.error('Failed to mark email as read on server:', error));
                 
-                // Simulate minimum loading time for better UX (optional)
                 await new Promise(resolve => setTimeout(resolve, 200));
                 
                 // Update modal content
@@ -1069,7 +1059,6 @@
                     </div>
                 `;
             } finally {
-                // Reset opening state
                 isModalOpening = false;
             }
         }
@@ -1078,13 +1067,13 @@
         function closeModal() {
             const modal = document.getElementById('emailModal');
             if (!modal || modal.style.display === 'none') {
-                return; // Modal already closed
+                return;
             }
-            
+
             modal.style.display = 'none';
             isModalOpen = false;
-            isModalOpening = false; // Reset this too in case it got stuck
-            
+            isModalOpening = false;
+
             console.log('Modal closed');
         }
 
@@ -1104,7 +1093,6 @@
                     console.error('Error deleting from server:', error);
                 }
                 
-                // Clear local state regardless of server response
                 currentEmail = '';
                 emails = [];
                 
@@ -1127,7 +1115,7 @@
                 if (currentEmail) {
                     checkEmails();
                 }
-            }, 15000); // Check every 15 seconds
+            }, 12000); 
         }
 
         // Stop auto-refresh
@@ -1205,7 +1193,6 @@
             });
         }
 
-        // Close modal when clicking outside
         window.onclick = function(event) {
             const modal = document.getElementById('emailModal');
             if (event.target === modal && !isModalOpening) {
@@ -1213,14 +1200,12 @@
             }
         }
 
-        // Add escape key handler to close modal
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape' && isModalOpen && !isModalOpening) {
                 closeModal();
             }
         });
 
-        // Clean up on page unload
         window.addEventListener('beforeunload', stopAutoRefresh);
         
         // Initialize app
@@ -1233,7 +1218,6 @@
                 return adjectives.length * nouns.length * 10 * 990;
             })());
             
-            // Update email list
             updateEmailList();
         });
 
