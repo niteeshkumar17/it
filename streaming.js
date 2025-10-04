@@ -1,10 +1,8 @@
-// --- API Configuration ---
-const API_KEY = '210d6a5dd3f16419ce349c9f1b200d6d'; // Public, read-only key for TMDB
+const API_KEY = '210d6a5dd3f16419ce349c9f1b200d6d'; 
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_URL = 'https://image.tmdb.org/t/p/w500';
 const STREAM_BASE_URL = 'https://vidsrc.xyz/embed/movie?tmdb=';
 
-// --- DOM Elements ---
 const mainContent = document.getElementById('main-content');
 const videoGrid = document.getElementById('video-grid');
 const searchInput = document.getElementById('search-input');
@@ -18,59 +16,50 @@ const genreDropdownBtn = document.getElementById('genre-dropdown-btn');
 const genreList = document.getElementById('genre-list');
 const genreArrow = document.getElementById('genre-arrow');
 
-// Watch Page Elements
 const watchPage = document.getElementById('watch-page');
 const watchIframe = document.getElementById('watch-iframe');
 const movieDetails = document.getElementById('movie-details');
 const recommendationsGrid = document.getElementById('recommendations-grid');
 const recommendationTitle = document.getElementById('recommendation-title');
 
-// --- App State ---
 let currentPage = 1;
 let totalPages = 1;
 let currentApiUrl = '';
 let isLoading = false;
 
-// --- API URL Builder ---
 function getFullApiUrl(baseUrl, page = 1) {
     const separator = baseUrl.includes('?') ? '&' : '?';
     return `${baseUrl}${separator}api_key=${API_KEY}&page=${page}`;
 }
 
-// --- View Management ---
 function showGridView() {
     watchPage.style.display = 'none';
     mainContent.style.display = 'block';
-    watchIframe.src = ""; // Stop video
+    watchIframe.src = ""; 
 }
 
 async function showWatchPage(movieId) {
     mainContent.style.display = 'none';
     watchPage.style.display = 'flex';
-    mainContent.scrollTop = 0; // Scroll main grid to top for next time
+    mainContent.scrollTop = 0; 
 
-    // Clear previous content
     watchIframe.src = "about:blank";
     movieDetails.innerHTML = '<div class="loader mx-auto"></div>';
     recommendationsGrid.innerHTML = '<div class="loader mx-auto"></div>';
 
-    // Set player source
     watchIframe.src = `${STREAM_BASE_URL}${movieId}`;
 
-    // Fetch and display details and recommendations
     const movieData = await fetchMovieDetails(movieId);
     if (movieData) {
         await fetchRecommendations(movieId, movieData.genres);
     }
 }
 
-// --- Data Fetching Functions ---
 async function fetchMovies(url, title) {
     showGridView();
     videoGrid.innerHTML = `<div class="col-span-full h-96 flex items-center justify-center"><div class="loader"></div></div>`;
     pageTitle.textContent = title;
 
-    // Reset for infinite scroll
     currentPage = 1;
     currentApiUrl = url;
 
@@ -172,7 +161,6 @@ async function fetchRecommendations(movieId, genres) {
     }
 }
 
-// --- UI Display Functions ---
 function displayMovies(movies) {
     videoGrid.innerHTML = '';
     if (movies.length === 0) {
@@ -260,7 +248,6 @@ function closeGenreDropdown() {
     genreList.style.maxHeight = '0px';
 }
 
-// --- Event Listeners ---
 mainContent.addEventListener('scroll', () => {
     const { scrollTop, scrollHeight, clientHeight } = mainContent;
     if (scrollTop + clientHeight >= scrollHeight - 5) {
@@ -330,9 +317,9 @@ function setInitialSidebarState() {
 }
 menuButton.addEventListener('click', toggleSidebar);
 
-// --- Initial Load ---
 document.addEventListener('DOMContentLoaded', () => {
     fetchMovies(`${BASE_URL}/movie/popular`, 'Popular Movies');
     fetchAndDisplayGenres();
     setInitialSidebarState();
+
 });
