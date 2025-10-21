@@ -379,7 +379,13 @@ function closeSidebar() {
 }
 menuButton.addEventListener('click', (e) => {
     e.stopPropagation();
-    sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    if (window.innerWidth < 1024) {
+        // Mobile logic
+        sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    } else {
+        // Desktop logic
+        sidebar.classList.toggle('desktop-collapsed');
+    }
 });
 overlay.addEventListener('click', closeSidebar);
 
@@ -388,3 +394,4 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.category-link[data-category="popular"][data-type="movie"]').click();
     fetchAndDisplayGenres();
 });
+
