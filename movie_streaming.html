@@ -80,7 +80,19 @@
                 pointer-events: auto;
             }
         }
-
+        
+        @media (min-width: 1024px) {
+            #sidebar {
+                /* Add transition for the desktop slide-in/out */
+                transition: margin-left 0.3s ease-in-out;
+            }
+            #sidebar.desktop-collapsed {
+                /* w-64 is 16rem (256px). We hide it by moving it left. */
+                /* The main content (flex-1) will auto-expand. */
+                margin-left: -16rem; 
+            }
+        }
+        
         .loader {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #e53e3e;
@@ -176,6 +188,7 @@
 </body>
 <script src="./streaming.js"></script>
 </html>
+
 
 
 
