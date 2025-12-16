@@ -30,6 +30,31 @@ const tvSeasonSelector = document.getElementById('tv-season-selector');
 // --- App State ---
 let currentPage = 1, totalPages = 1, currentApiUrl = '', currentMediaType = 'movie', isLoading = false;
 
+// --- URL State Management ---
+function updateUrlState(mediaId, mediaType, season = null, episode = null) {
+    let hash = `#${mediaType}/${mediaId}`;
+    if (mediaType === 'tv' && season && episode) {
+        hash += `/${season}/${episode}`;
+    }
+    history.replaceState(null, '', hash);
+}
+
+function clearUrlState() {
+    history.replaceState(null, '', window.location.pathname);
+}
+
+function getStateFromUrl() {
+    const hash = window.location.hash.replace('#', '');
+    if (!hash) return null;
+    const parts = hash.split('/');
+    return {
+        mediaType: parts[0] || null,
+        mediaId: parts[1] || null,
+        season: parts[2] || null,
+        episode: parts[3] || null
+    };
+}
+
 // --- API & View Management ---
 function getFullApiUrl(baseUrl, page = 1) {
     const separator = baseUrl.includes('?') ? '&' : '?';
@@ -76,9 +101,10 @@ function showGridView() {
     watchPage.style.display = 'none';
     mainContent.style.display = 'block';
     watchIframe.src = ""; // Stop video playback
+    clearUrlState(); // Clear URL hash when going back to grid
 }
 
-async function showWatchPage(mediaId, mediaType) {
+async function showWatchPage(mediaId, mediaType, restoreSeason = null, restoreEpisode = null) {
     mainContent.style.display = 'none';
     watchPage.style.display = 'block';
     watchPage.scrollTop = 0;
@@ -87,17 +113,20 @@ async function showWatchPage(mediaId, mediaType) {
     recommendationsGrid.innerHTML = '<div class="loader mx-auto"></div>';
     tvSeasonSelector.style.display = 'none';
     tvSeasonSelector.innerHTML = '';
-    
+
     if (mediaType === 'movie') {
         watchIframe.src = `${STREAM_BASE_URLS.movie}${mediaId}`;
+        updateUrlState(mediaId, mediaType);
     }
-    
+
     const mediaData = await fetchMediaDetails(mediaId, mediaType);
     if (mediaData) {
         if (mediaType === 'tv') {
-            displaySeasonSelector(mediaData, mediaId);
-            // Default to S1E1 on initial load
-            watchIframe.src = `${STREAM_BASE_URLS.tv}${mediaId}&season=1&episode=1`;
+            const season = restoreSeason ? parseInt(restoreSeason) : 1;
+            const episode = restoreEpisode ? parseInt(restoreEpisode) : 1;
+            displaySeasonSelector(mediaData, mediaId, season, episode);
+            watchIframe.src = `${STREAM_BASE_URLS.tv}${mediaId}&season=${season}&episode=${episode}`;
+            updateUrlState(mediaId, mediaType, season, episode);
         }
         await fetchRecommendations(mediaId, mediaType, mediaData.genres);
     }
@@ -143,7 +172,7 @@ async function fetchAndDisplayGenres() {
     try {
         const res = await fetch(url);
         const data = await res.json();
-        genreList.innerHTML = data.genres.map(genre => 
+        genreList.innerHTML = data.genres.map(genre =>
             `<a href="#" class="flex items-center p-2 mt-1 rounded-lg hover:bg-gray-800 category-link genre-link" data-genre-id="${genre.id}" data-genre-name="${genre.name}">
                 <span class="font-medium text-sm">${genre.name}</span>
             </a>`
@@ -237,7 +266,7 @@ function displayRecommendations(mediaItems, mediaType) {
         const releaseDate = item.release_date || item.first_air_date;
         const year = releaseDate ? releaseDate.split('-')[0] : 'N/A';
         const imagePath = item.backdrop_path ? IMG_URL + item.backdrop_path : (item.poster_path ? IMG_URL + item.poster_path : 'https://placehold.co/320x180/0f0f0f/ffffff?text=N/A');
-        
+
         return `
             <div class="flex items-start space-x-2 sm:space-x-3 cursor-pointer p-1.5 sm:p-2 rounded-lg recommendation-card hover:bg-gray-800" data-media-id="${item.id}" data-media-type="${mediaType}">
                 <img src="${imagePath}" alt="${title}" class="w-24 sm:w-28 md:w-32 flex-shrink-0 h-auto object-cover rounded-md aspect-video">
@@ -257,12 +286,12 @@ function displayRecommendations(mediaItems, mediaType) {
     });
 }
 
-function displaySeasonSelector(seriesData, seriesId) {
+function displaySeasonSelector(seriesData, seriesId, restoreSeason = 1, restoreEpisode = 1) {
     tvSeasonSelector.style.display = 'block';
     const seasons = seriesData.seasons.filter(s => s.episode_count > 0 && s.season_number > 0);
-    
-    let seasonOptionsHtml = seasons.map(season => 
-        `<option value="${season.season_number}" data-episode-count="${season.episode_count}">${season.name}</option>`
+
+    let seasonOptionsHtml = seasons.map(season =>
+        `<option value="${season.season_number}" data-episode-count="${season.episode_count}" ${season.season_number === restoreSeason ? 'selected' : ''}>${season.name}</option>`
     ).join('');
 
     tvSeasonSelector.innerHTML = `
@@ -279,15 +308,17 @@ function displaySeasonSelector(seriesData, seriesId) {
     seasonDropdown.addEventListener('change', (e) => {
         const selectedOption = e.target.options[e.target.selectedIndex];
         const episodeCount = parseInt(selectedOption.dataset.episodeCount);
-        displayEpisodeList(seriesId, e.target.value, episodeCount);
+        displayEpisodeList(seriesId, e.target.value, episodeCount, 1); // Reset to episode 1 on season change
     });
 
-    if (seasons.length > 0) {
-        displayEpisodeList(seriesId, seasons[0].season_number, seasons[0].episode_count);
+    // Find the episode count for the restore season
+    const selectedSeason = seasons.find(s => s.season_number === restoreSeason) || seasons[0];
+    if (selectedSeason) {
+        displayEpisodeList(seriesId, selectedSeason.season_number, selectedSeason.episode_count, restoreEpisode);
     }
 }
 
-function displayEpisodeList(seriesId, seasonNumber, episodeCount) {
+function displayEpisodeList(seriesId, seasonNumber, episodeCount, restoreEpisode = 1) {
     const container = document.getElementById('episode-list-container');
     let episodeButtonsHtml = '';
     for (let i = 1; i <= episodeCount; i++) {
@@ -300,12 +331,16 @@ function displayEpisodeList(seriesId, seasonNumber, episodeCount) {
         btn.addEventListener('click', () => {
             episodeButtons.forEach(b => b.classList.remove('btn-active'));
             btn.classList.add('btn-active');
-            watchIframe.src = `${STREAM_BASE_URLS.tv}${seriesId}&season=${seasonNumber}&episode=${btn.dataset.episodeNumber}`;
+            const episodeNum = btn.dataset.episodeNumber;
+            watchIframe.src = `${STREAM_BASE_URLS.tv}${seriesId}&season=${seasonNumber}&episode=${episodeNum}`;
+            updateUrlState(seriesId, 'tv', seasonNumber, episodeNum);
         });
     });
 
-    if(episodeButtons.length > 0) {
-        episodeButtons[0].click();
+    // Click the restore episode or first episode
+    const targetEpisode = Math.min(restoreEpisode, episodeCount);
+    if (episodeButtons.length > 0) {
+        episodeButtons[targetEpisode - 1].click();
     }
 }
 
@@ -390,8 +425,19 @@ menuButton.addEventListener('click', (e) => {
 overlay.addEventListener('click', closeSidebar);
 
 // --- Initial Load ---
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelector('.category-link[data-category="popular"][data-type="movie"]').click();
+document.addEventListener('DOMContentLoaded', async () => {
+    // Always fetch genres
     fetchAndDisplayGenres();
+
+    // Check for saved state in URL hash
+    const state = getStateFromUrl();
+
+    if (state && state.mediaId && state.mediaType) {
+        // Restore the watch page from URL state
+        await showWatchPage(state.mediaId, state.mediaType, state.season, state.episode);
+    } else {
+        // Default: show popular movies
+        document.querySelector('.category-link[data-category="popular"][data-type="movie"]').click();
+    }
 });
 
