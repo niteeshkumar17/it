@@ -473,7 +473,14 @@ document.querySelectorAll('.category-link[data-category]').forEach(link => {
         const category = link.dataset.category;
         const mediaType = link.dataset.type;
         const title = link.querySelector('span').textContent;
-        const url = `${BASE_URL}/${mediaType}/${category}`;
+
+        let url;
+        if (category === 'hindi') {
+            url = `${BASE_URL}/discover/movie?with_original_language=hi&sort_by=popularity.desc`;
+        } else {
+            url = `${BASE_URL}/${mediaType}/${category}`;
+        }
+
         fetchMedia(url, title, mediaType);
     });
 });
@@ -484,7 +491,7 @@ genreDropdownBtn.addEventListener('click', () => {
 });
 
 homeLogoButton.addEventListener('click', () => {
-    document.querySelector('.category-link[data-category="popular"][data-type="movie"]').click();
+    document.querySelector('.category-link[data-category="hindi"][data-type="movie"]').click();
 });
 
 // --- Mobile Sidebar Logic ---
@@ -520,8 +527,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Restore the watch page from URL state
         await showWatchPage(state.mediaId, state.mediaType, state.season, state.episode);
     } else {
-        // Default: show popular movies
-        document.querySelector('.category-link[data-category="popular"][data-type="movie"]').click();
+        // Default: show hindi movies
+        document.querySelector('.category-link[data-category="hindi"][data-type="movie"]').click();
     }
 });
 
