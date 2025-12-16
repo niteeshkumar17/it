@@ -2,6 +2,49 @@
 const API_KEY = '210d6a5dd3f16419ce349c9f1b200d6d'; // Public TMDB read-only key
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_URL = 'https://image.tmdb.org/t/p/w500';
+const STREAM_PROVIDERS = [
+    {
+        name: 'Server 1',
+        id: 'vidsrcvip',
+        getUrl: (type, id, s, e) => {
+            if (type === 'movie') return `https://vidsrc.vip/embed/movie/${id}`;
+            return `https://vidsrc.vip/embed/tv/${id}/${s}/${e}`;
+        }
+    },
+    {
+        name: 'Server 2',
+        id: 'vidsrc2',
+        getUrl: (type, id, s, e) => {
+            if (type === 'movie') return `https://vidsrc.to/embed/movie/${id}`;
+            return `https://vidsrc.to/embed/tv/${id}/${s}/${e}`;
+        }
+    },
+    {
+        name: 'Server 3',
+        id: 'vidlink',
+        getUrl: (type, id, s, e) => {
+            if (type === 'movie') return `https://vidlink.pro/movie/${id}`;
+            return `https://vidlink.pro/tv/${id}/${s}/${e}`;
+        }
+    },
+    {
+        name: 'Server 4',
+        id: 'vidsrcme',
+        getUrl: (type, id, s, e) => {
+            if (type === 'movie') return `https://vidsrc.me/embed/movie?tmdb=${id}`;
+            return `https://vidsrc.me/embed/tv?tmdb=${id}&season=${s}&episode=${e}`;
+        }
+    },
+    {
+        name: 'Server 5',
+        id: 'vidsrc1',
+        getUrl: (type, id, s, e) => {
+            if (type === 'movie') return `https://vidsrc.xyz/embed/movie?tmdb=${id}`;
+            return `https://vidsrc.xyz/embed/tv?tmdb=${id}&season=${s}&episode=${e}`;
+        }
+    }
+];
+
 const STREAM_BASE_URLS = {
     movie: 'https://vidsrc.xyz/embed/movie?tmdb=',
     tv: 'https://vidsrc.xyz/embed/tv?tmdb='
@@ -25,10 +68,15 @@ const watchIframe = document.getElementById('watch-iframe');
 const mediaDetails = document.getElementById('media-details');
 const recommendationsGrid = document.getElementById('recommendations-grid');
 const recommendationTitle = document.getElementById('recommendation-title');
+
 const tvSeasonSelector = document.getElementById('tv-season-selector');
+const serverContainer = document.getElementById('server-container');
 
 // --- App State ---
 let currentPage = 1, totalPages = 1, currentApiUrl = '', currentMediaType = 'movie', isLoading = false;
+let currentProvider = STREAM_PROVIDERS[0];
+let currentSeason = 1;
+let currentEpisode = 1;
 
 // --- URL State Management ---
 function updateUrlState(mediaId, mediaType, season = null, episode = null) {
@@ -114,22 +162,61 @@ async function showWatchPage(mediaId, mediaType, restoreSeason = null, restoreEp
     tvSeasonSelector.style.display = 'none';
     tvSeasonSelector.innerHTML = '';
 
-    if (mediaType === 'movie') {
-        watchIframe.src = `${STREAM_BASE_URLS.movie}${mediaId}`;
-        updateUrlState(mediaId, mediaType);
-    }
+    // Reset state
+    currentSeason = restoreSeason ? parseInt(restoreSeason) : 1;
+    currentEpisode = restoreEpisode ? parseInt(restoreEpisode) : 1;
+
+    // Render Server Selector
+    renderServerSelector(mediaId, mediaType);
+
+    // Initial Load
+    updateVideoSource(mediaId, mediaType);
+    updateUrlState(mediaId, mediaType, mediaType === 'tv' ? currentSeason : null, mediaType === 'tv' ? currentEpisode : null);
 
     const mediaData = await fetchMediaDetails(mediaId, mediaType);
     if (mediaData) {
         if (mediaType === 'tv') {
-            const season = restoreSeason ? parseInt(restoreSeason) : 1;
-            const episode = restoreEpisode ? parseInt(restoreEpisode) : 1;
-            displaySeasonSelector(mediaData, mediaId, season, episode);
-            watchIframe.src = `${STREAM_BASE_URLS.tv}${mediaId}&season=${season}&episode=${episode}`;
-            updateUrlState(mediaId, mediaType, season, episode);
+            displaySeasonSelector(mediaData, mediaId, currentSeason, currentEpisode);
         }
         await fetchRecommendations(mediaId, mediaType, mediaData.genres);
     }
+}
+
+function renderServerSelector(mediaId, mediaType) {
+    serverContainer.innerHTML = `
+        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2">
+            <span class="text-xs sm:text-sm text-gray-400 font-medium whitespace-nowrap">Switch Server:</span>
+            ${STREAM_PROVIDERS.map(provider => `
+                <button 
+                    class="server-btn px-3 py-1.5 rounded-full text-xs sm:text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 border border-transparent whitespace-nowrap transition-all ${provider.id === currentProvider.id ? 'bg-red-600 text-white border-red-500' : ''}"
+                    data-id="${provider.id}">
+                    ${provider.name}
+                </button>
+            `).join('')}
+        </div>
+    `;
+
+    serverContainer.querySelectorAll('.server-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const providerId = btn.dataset.id;
+            currentProvider = STREAM_PROVIDERS.find(p => p.id === providerId);
+
+            // Update UI active state
+            serverContainer.querySelectorAll('.server-btn').forEach(b => {
+                b.classList.remove('bg-red-600', 'text-white', 'border-red-500');
+                b.classList.add('bg-gray-800', 'text-gray-300');
+            });
+            btn.classList.remove('bg-gray-800', 'text-gray-300');
+            btn.classList.add('bg-red-600', 'text-white', 'border-red-500');
+
+            updateVideoSource(mediaId, mediaType);
+        });
+    });
+}
+
+function updateVideoSource(mediaId, mediaType) {
+    const url = currentProvider.getUrl(mediaType, mediaId, currentSeason, currentEpisode);
+    watchIframe.src = url;
 }
 
 async function fetchMediaDetails(mediaId, mediaType) {
@@ -331,9 +418,13 @@ function displayEpisodeList(seriesId, seasonNumber, episodeCount, restoreEpisode
         btn.addEventListener('click', () => {
             episodeButtons.forEach(b => b.classList.remove('btn-active'));
             btn.classList.add('btn-active');
-            const episodeNum = btn.dataset.episodeNumber;
-            watchIframe.src = `${STREAM_BASE_URLS.tv}${seriesId}&season=${seasonNumber}&episode=${episodeNum}`;
-            updateUrlState(seriesId, 'tv', seasonNumber, episodeNum);
+
+            const episodeNum = parseInt(btn.dataset.episodeNumber);
+            currentSeason = parseInt(seasonNumber);
+            currentEpisode = episodeNum;
+
+            updateVideoSource(seriesId, 'tv');
+            updateUrlState(seriesId, 'tv', currentSeason, currentEpisode);
         });
     });
 
