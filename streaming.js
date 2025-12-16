@@ -11,16 +11,9 @@ const STREAM_PROVIDERS = [
             return `https://vidsrc.vip/embed/tv/${id}/${s}/${e}`;
         }
     },
+
     {
         name: 'Server 2',
-        id: 'vidsrc2',
-        getUrl: (type, id, s, e) => {
-            if (type === 'movie') return `https://vidsrc.to/embed/movie/${id}`;
-            return `https://vidsrc.to/embed/tv/${id}/${s}/${e}`;
-        }
-    },
-    {
-        name: 'Server 3',
         id: 'vidlink',
         getUrl: (type, id, s, e) => {
             if (type === 'movie') return `https://vidlink.pro/movie/${id}`;
@@ -28,7 +21,7 @@ const STREAM_PROVIDERS = [
         }
     },
     {
-        name: 'Server 4',
+        name: 'Server 3',
         id: 'vidsrcme',
         getUrl: (type, id, s, e) => {
             if (type === 'movie') return `https://vidsrc.me/embed/movie?tmdb=${id}`;
@@ -36,7 +29,7 @@ const STREAM_PROVIDERS = [
         }
     },
     {
-        name: 'Server 5',
+        name: 'Server 4',
         id: 'vidsrc1',
         getUrl: (type, id, s, e) => {
             if (type === 'movie') return `https://vidsrc.xyz/embed/movie?tmdb=${id}`;
