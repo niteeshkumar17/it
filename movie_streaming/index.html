@@ -244,7 +244,7 @@
                                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg><span class="font-medium">Airing Today</span></a>
 
-                    <p class="px-3 py-2 mt-4 text-xs font-semibold text-gray-500 tracking-wider uppercase">Live TV</p>
+                    <p class="px-3 py-2 mt-4 text-xs font-semibold text-gray-500 tracking-wider uppercase">Live</p>
                     <a href="#" id="live-tv-link" class="flex items-center p-3 mt-1 rounded-lg hover:bg-gray-800">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-4" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor" stroke-width="2">
@@ -253,6 +253,15 @@
                         </svg>
                         <span class="font-medium">Live Channels</span>
                         <span class="ml-auto bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">LIVE</span>
+                    </a>
+                    <a href="#" id="radio-link" class="flex items-center p-3 mt-1 rounded-lg hover:bg-gray-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+                        </svg>
+                        <span class="font-medium">Radio Stations</span>
+                        <span class="ml-auto bg-purple-600 text-white text-xs px-2 py-0.5 rounded-full">LIVE</span>
                     </a>
                 </nav>
                 <div class="p-2 mt-2 border-t border-gray-800">
@@ -281,22 +290,22 @@
                 <div id="iptv-filters"
                     class="mb-4 sm:mb-6 bg-gray-900/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 backdrop-blur-sm border border-gray-800"
                     style="display: none;">
-                    <!-- Filters Row - Search icon + 2 dropdowns in one row -->
-                    <div class="grid grid-cols-[auto_1fr_1fr] sm:grid-cols-[1fr_1fr_1fr] gap-2 sm:gap-3 items-stretch">
-                        <!-- Search - Icon only on mobile, full input on desktop -->
-                        <div class="relative flex">
+                    <!-- Filters Row - Search icon + flex dropdowns -->
+                    <div class="flex gap-2 sm:gap-3 items-stretch">
+                        <!-- Search - Icon only on mobile (expands on focus), full input on desktop -->
+                        <div class="relative flex transition-all duration-300 ease-in-out group">
                             <input type="text" id="iptv-search" placeholder="Search..."
-                                class="w-12 sm:w-full bg-gray-800 text-white text-sm sm:text-base rounded-lg sm:rounded-xl px-3 sm:pl-10 sm:pr-4 py-3 border border-gray-700 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all placeholder-transparent sm:placeholder-gray-400 text-center sm:text-left cursor-pointer sm:cursor-text">
-                            <svg class="absolute left-1/2 sm:left-3 top-1/2 transform -translate-x-1/2 sm:translate-x-0 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
+                                class="w-12 focus:w-[calc(100vw-40px)] sm:focus:w-full sm:w-full bg-gray-800 text-white text-sm sm:text-base rounded-lg sm:rounded-xl px-3 sm:pl-10 sm:pr-4 py-3 border border-gray-700 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all placeholder-transparent sm:placeholder-gray-400 text-center sm:text-left cursor-pointer sm:cursor-text focus:absolute focus:left-0 focus:z-50 focus:px-4 focus:text-left focus:placeholder-gray-400">
+                            <svg class="absolute left-1/2 sm:left-3 top-1/2 transform -translate-x-1/2 sm:translate-x-0 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none group-focus-within:hidden sm:group-focus-within:block"
                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
                         </div>
                         <!-- Country Filter -->
-                        <div class="relative">
+                        <div class="relative min-w-0 flex-1">
                             <select id="iptv-country-filter"
-                                class="w-full bg-gray-800 text-white text-sm sm:text-base rounded-lg sm:rounded-xl px-3 sm:px-4 py-3 border border-gray-700 focus:border-red-500 focus:outline-none cursor-pointer appearance-none hover:bg-gray-700 transition-colors h-full">
+                                class="w-full bg-gray-800 text-white text-sm sm:text-base rounded-lg sm:rounded-xl px-3 sm:px-4 py-3 border border-gray-700 focus:border-red-500 focus:outline-none cursor-pointer appearance-none hover:bg-gray-700 transition-colors h-full truncate text-ellipsis pr-8">
                                 <option value="">All Countries</option>
                             </select>
                             <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
@@ -306,9 +315,9 @@
                             </svg>
                         </div>
                         <!-- Category Filter -->
-                        <div class="relative">
+                        <div class="relative min-w-0 flex-1">
                             <select id="iptv-category-filter"
-                                class="w-full bg-gray-800 text-white text-sm sm:text-base rounded-lg sm:rounded-xl px-3 sm:px-4 py-3 border border-gray-700 focus:border-red-500 focus:outline-none cursor-pointer appearance-none hover:bg-gray-700 transition-colors h-full">
+                                class="w-full bg-gray-800 text-white text-sm sm:text-base rounded-lg sm:rounded-xl px-3 sm:px-4 py-3 border border-gray-700 focus:border-red-500 focus:outline-none cursor-pointer appearance-none hover:bg-gray-700 transition-colors h-full truncate text-ellipsis pr-8">
                                 <option value="">All Categories</option>
                             </select>
                             <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"

@@ -53,6 +53,15 @@ const IPTV_API = {
     logos: 'https://iptv-org.github.io/api/logos.json'
 };
 
+// --- Radio Browser API Configuration ---
+// Using multiple servers for fallback
+const RADIO_API_SERVERS = [
+    'https://all.api.radio-browser.info',
+    'https://fi1.api.radio-browser.info',
+    'https://fr1.api.radio-browser.info'
+];
+let currentRadioServer = RADIO_API_SERVERS[0];
+
 // --- IPTV State ---
 let iptvChannels = [];
 let iptvCountries = [];
@@ -63,6 +72,13 @@ let selectedCountry = '';
 let selectedCategory = '';
 let iptvSearchQuery = '';
 let isLiveTVMode = false;
+
+// --- Radio State ---
+let radioStations = [];
+let radioCountries = [];
+let selectedRadioCountry = '';
+let radioSearchQuery = '';
+let isRadioMode = false;
 
 // --- Fuzzy Search Helper ---
 function fuzzyMatch(str, query) {
@@ -788,10 +804,33 @@ function populateIPTVFilters() {
         sortedCountries.map(c => `<option value="${c.code}" ${c.code === selectedCountry ? 'selected' : ''}>${c.flag} ${c.name}</option>`).join('');
 
     // Populate categories
-    if (categoryFilter && iptvCategories.length > 0) {
-        const sortedCategories = [...iptvCategories].sort((a, b) => a.name.localeCompare(b.name));
-        categoryFilter.innerHTML = '<option value="">All Categories</option>' +
-            sortedCategories.map(c => `<option value="${c.id}" ${c.id === selectedCategory ? 'selected' : ''}>${c.name}</option>`).join('');
+    if (categoryFilter) {
+        let categoriesToDisplay = [];
+
+        // Try using official category list first
+        if (iptvCategories && iptvCategories.length > 0) {
+            categoriesToDisplay = [...iptvCategories];
+        }
+
+        // Fallback: Extract from channels if list is empty
+        if (categoriesToDisplay.length === 0 && iptvChannels.length > 0) {
+            const uniqueCats = new Set();
+            iptvChannels.forEach(c => {
+                if (c.categories && c.categories.length) {
+                    c.categories.forEach(cat => uniqueCats.add(cat));
+                }
+            });
+            categoriesToDisplay = Array.from(uniqueCats).map(cat => ({
+                id: cat,
+                name: cat.charAt(0).toUpperCase() + cat.slice(1)
+            }));
+        }
+
+        if (categoriesToDisplay.length > 0) {
+            const sortedCategories = categoriesToDisplay.sort((a, b) => a.name.localeCompare(b.name));
+            categoryFilter.innerHTML = '<option value="">All Categories</option>' +
+                sortedCategories.map(c => `<option value="${c.id}" ${c.id === selectedCategory ? 'selected' : ''}>${c.name}</option>`).join('');
+        }
     }
 }
 
@@ -1022,7 +1061,16 @@ async function showLiveTV() {
     const filtersContainer = document.getElementById('iptv-filters');
     if (filtersContainer) {
         filtersContainer.style.display = 'flex';
+        // Ensure category filter is visible for Live TV (might be hidden by radio)
+        const categoryFilter = document.getElementById('iptv-category-filter');
+        if (categoryFilter) {
+            categoryFilter.parentElement.style.display = 'block';
+        }
     }
+
+    // Sidebar active state
+    document.querySelectorAll('.category-link, #radio-link').forEach(link => link.classList.remove('bg-gray-800'));
+    document.getElementById('live-tv-link')?.classList.add('bg-gray-800');
 
     if (iptvChannels.length === 0) {
         const success = await fetchIPTVData();
@@ -1136,6 +1184,394 @@ window.addEventListener('popstate', async (event) => {
         // Only trigger content load if grid is empty or has home page content
         if (mediaGrid.children.length === 0 || mediaGrid.querySelector('.loader') || !isHomePage) {
             showHomePage();
+        }
+    }
+});
+
+// --- Radio Functions ---
+async function fetchRadioData() {
+    // Try each server until one works
+    for (const server of RADIO_API_SERVERS) {
+        try {
+            const countriesRes = await fetch(`${server}/json/countries`, {
+                headers: {
+                    'User-Agent': 'MovieStreamingApp/1.0'
+                }
+            });
+
+            if (!countriesRes.ok) continue;
+
+            radioCountries = await countriesRes.json();
+            currentRadioServer = server;
+
+            // Sort countries by station count (most popular first)
+            radioCountries.sort((a, b) => b.stationcount - a.stationcount);
+
+            console.log('Radio API connected to:', server);
+            return true;
+        } catch (error) {
+            console.warn(`Radio server ${server} failed:`, error.message);
+            continue;
+        }
+    }
+
+    console.error('All radio servers failed');
+    return false;
+}
+
+async function fetchRadioStations(countryCode = '', searchQuery = '') {
+    try {
+        let url;
+
+        if (searchQuery) {
+            url = `${currentRadioServer}/json/stations/byname/${encodeURIComponent(searchQuery)}?limit=100&hidebroken=true&order=votes&reverse=true`;
+        } else if (countryCode) {
+            url = `${currentRadioServer}/json/stations/bycountrycodeexact/${countryCode}?limit=100&hidebroken=true&order=votes&reverse=true`;
+        } else {
+            url = `${currentRadioServer}/json/stations/topvote/100`;
+        }
+
+        const res = await fetch(url, {
+            headers: {
+                'User-Agent': 'MovieStreamingApp/1.0'
+            }
+        });
+
+        if (!res.ok) throw new Error('Failed to fetch stations');
+        radioStations = await res.json();
+
+        return true;
+    } catch (error) {
+        console.error('Failed to fetch radio stations:', error);
+        return false;
+    }
+}
+
+function populateRadioFilters() {
+    const countryFilter = document.getElementById('iptv-country-filter');
+
+    if (!countryFilter) return;
+
+    // Restore saved selection from localStorage
+    selectedRadioCountry = localStorage.getItem('radio-country') || '';
+
+    // Populate countries - top 50 by station count
+    const topCountries = radioCountries.slice(0, 50);
+    countryFilter.innerHTML = '<option value="">All Countries (Top Stations)</option>' +
+        topCountries.map(c => `<option value="${c.iso_3166_1}" ${c.iso_3166_1 === selectedRadioCountry ? 'selected' : ''}>${c.name} (${c.stationcount})</option>`).join('');
+}
+
+function displayRadioStations() {
+    let displayStations = [...radioStations];
+
+    // Filter by search query (fuzzy match)
+    if (radioSearchQuery) {
+        displayStations = displayStations.filter(s =>
+            fuzzyMatch(s.name, radioSearchQuery) ||
+            fuzzyMatch(s.tags, radioSearchQuery)
+        );
+    }
+
+    // Limit for performance
+    displayStations = displayStations.slice(0, 100);
+
+    if (displayStations.length === 0) {
+        mediaGrid.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <p class="text-gray-400 text-lg">No radio stations found.</p>
+                <p class="text-gray-500 text-sm mt-2">Try adjusting your search or country filter.</p>
+            </div>
+        `;
+        return;
+    }
+
+    mediaGrid.innerHTML = displayStations.map(station => {
+        const initial = station.name.charAt(0).toUpperCase();
+        // Generate a consistent color based on station name
+        const colors = ['from-purple-600 to-pink-600', 'from-blue-600 to-indigo-600', 'from-green-600 to-emerald-600', 'from-orange-600 to-amber-600', 'from-red-600 to-rose-600', 'from-cyan-600 to-blue-600'];
+        const colorIndex = station.name.charCodeAt(0) % colors.length;
+        const gradientClass = colors[colorIndex];
+        const tags = station.tags ? station.tags.split(',').slice(0, 3).join(', ') : 'Radio';
+
+        return `
+            <div class="media-card group cursor-pointer bg-gray-900 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105" 
+                 data-radio-id="${station.stationuuid}">
+                <div class="relative aspect-square bg-gray-800">
+                    ${station.favicon ?
+                `<img src="${station.favicon}" alt="${station.name}" 
+                             class="w-full h-full object-contain p-4"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                         <div class="absolute inset-0 bg-gradient-to-br ${gradientClass} items-center justify-center" style="display: none;">
+                             <span class="text-4xl font-bold text-white">${initial}</span>
+                         </div>`
+                :
+                `<div class="absolute inset-0 bg-gradient-to-br ${gradientClass} flex items-center justify-center">
+                             <span class="text-4xl font-bold text-white">${initial}</span>
+                         </div>`
+            }
+                    <div class="absolute top-2 left-2 bg-purple-600 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                        <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                        LIVE
+                    </div>
+                    ${station.countrycode ? `<div class="absolute bottom-2 right-2 text-sm bg-black/50 px-1.5 rounded">${station.countrycode}</div>` : ''}
+                </div>
+                <div class="p-3">
+                    <h3 class="font-semibold text-sm text-white truncate group-hover:text-purple-400 transition-colors">${station.name}</h3>
+                    <p class="text-xs text-gray-400 mt-1 truncate">${tags}</p>
+                    ${station.bitrate ? `<p class="text-xs text-gray-500 mt-0.5">${station.bitrate} kbps</p>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Add click handlers for stations
+    mediaGrid.querySelectorAll('.media-card[data-radio-id]').forEach(card => {
+        card.addEventListener('click', () => {
+            const stationId = card.dataset.radioId;
+            playRadioStation(stationId);
+        });
+    });
+}
+
+function playRadioStation(stationId, addToHistory = true) {
+    const station = radioStations.find(s => s.stationuuid === stationId);
+
+    if (!station || !station.url_resolved) {
+        alert('Stream not available for this station.');
+        return;
+    }
+
+    // Only update history if explicitly requested
+    if (addToHistory) {
+        history.pushState({ mediaType: 'radio', stationId }, '', `#radio/${encodeURIComponent(stationId)}`);
+    }
+
+    displayRadioContent(station);
+}
+
+function displayRadioContent(station) {
+    mainContent.style.display = 'none';
+    watchPage.style.display = 'block';
+    watchPage.scrollTop = 0;
+
+    // Use the HLS player for audio streams (pass station name and type for display)
+    watchIframe.src = `hls-player.html?url=${encodeURIComponent(station.url_resolved)}&name=${encodeURIComponent(station.name)}&type=radio`;
+
+    // Update media details
+    const tags = station.tags ? station.tags.split(',').slice(0, 5).join(', ') : 'Radio';
+    mediaDetails.innerHTML = `
+        <h1 class="text-xl sm:text-2xl font-bold text-white mb-2">${station.name}</h1>
+        <div class="flex items-center gap-3 text-sm text-gray-400 mb-4 flex-wrap">
+            <span class="bg-purple-600 text-white px-2 py-0.5 rounded text-xs">RADIO</span>
+            ${station.country ? `<span>${station.country}</span>` : ''}
+            ${station.bitrate ? `<span>${station.bitrate} kbps</span>` : ''}
+            ${station.codec ? `<span>${station.codec}</span>` : ''}
+        </div>
+        <p class="text-sm text-gray-400 mb-4">${tags}</p>
+        ${station.homepage ? `<a href="${station.homepage}" target="_blank" class="text-purple-400 hover:underline text-sm">Visit Station Website</a>` : ''}
+    `;
+
+    // Hide TV-specific controls
+    tvSeasonSelector.style.display = 'none';
+    serverContainer.innerHTML = '';
+
+    // Show related stations
+    displayRadioRecommendations(station);
+}
+
+function displayRadioRecommendations(currentStation) {
+    // Find related stations by tags or country
+    let relatedStations = [];
+
+    if (currentStation.tags) {
+        const currentTags = currentStation.tags.split(',').map(t => t.trim().toLowerCase());
+        relatedStations = radioStations.filter(s =>
+            s.stationuuid !== currentStation.stationuuid &&
+            s.tags &&
+            s.tags.split(',').some(t => currentTags.includes(t.trim().toLowerCase()))
+        );
+    }
+
+    // If not enough, add more from same country
+    if (relatedStations.length < 10) {
+        const countryStations = radioStations.filter(s =>
+            s.stationuuid !== currentStation.stationuuid &&
+            s.countrycode === currentStation.countrycode &&
+            !relatedStations.find(rs => rs.stationuuid === s.stationuuid)
+        );
+        relatedStations = [...relatedStations, ...countryStations];
+    }
+
+    relatedStations = relatedStations.slice(0, 15);
+
+    if (relatedStations.length === 0) {
+        recommendationsGrid.innerHTML = '<p class="text-gray-500 text-sm">No related stations found.</p>';
+        return;
+    }
+
+    recommendationTitle.textContent = 'Similar Stations';
+
+    recommendationsGrid.innerHTML = relatedStations.map(station => {
+        const initial = station.name.charAt(0).toUpperCase();
+
+        return `
+            <div class="recommendation-card flex items-center p-2 rounded-lg cursor-pointer hover:bg-gray-800 transition-colors" 
+                 data-rec-radio-id="${station.stationuuid}">
+                <div class="w-12 h-12 bg-gray-800 rounded flex-shrink-0 flex items-center justify-center overflow-hidden">
+                    ${station.favicon ?
+                `<img src="${station.favicon}" alt="${station.name}" class="w-full h-full object-contain p-1" onerror="this.parentElement.innerHTML='<span class=\\'text-lg font-bold text-purple-400\\'>${initial}</span>'">`
+                : `<span class="text-lg font-bold text-purple-400">${initial}</span>`
+            }
+                </div>
+                <div class="ml-3 flex-1 min-w-0">
+                    <h4 class="text-sm font-medium text-white truncate">${station.name}</h4>
+                    <p class="text-xs text-gray-400">${station.countrycode || 'Radio'}</p>
+                </div>
+                <span class="bg-purple-600 text-white text-xs px-1.5 py-0.5 rounded ml-2">LIVE</span>
+            </div>
+        `;
+    }).join('');
+
+    // Add click handlers
+    recommendationsGrid.querySelectorAll('.recommendation-card[data-rec-radio-id]').forEach(card => {
+        card.addEventListener('click', () => {
+            playRadioStation(card.dataset.recRadioId);
+        });
+    });
+}
+
+async function showRadio() {
+    isRadioMode = true;
+    isLiveTVMode = false;
+    isHomePage = false;
+    showGridView();
+    pageTitle.textContent = 'Radio Stations';
+    mediaGrid.innerHTML = `<div class="col-span-full h-96 flex items-center justify-center"><div class="loader"></div></div>`;
+
+    // Show filters (reuse IPTV filters container)
+    const filtersContainer = document.getElementById('iptv-filters');
+    if (filtersContainer) {
+        filtersContainer.style.display = 'flex';
+        // Hide category filter for radio
+        const categoryFilter = document.getElementById('iptv-category-filter');
+        if (categoryFilter) {
+            categoryFilter.parentElement.style.display = 'none';
+        }
+    }
+
+    // Sidebar active state
+    document.querySelectorAll('.category-link, #live-tv-link').forEach(link => link.classList.remove('bg-gray-800'));
+    document.getElementById('radio-link')?.classList.add('bg-gray-800');
+
+    // Fetch radio data if not already fetched
+
+    // Fetch radio data if not already fetched
+    if (radioCountries.length === 0) {
+        const success = await fetchRadioData();
+        if (!success) {
+            mediaGrid.innerHTML = `<div class="col-span-full text-center text-red-500"><p>Failed to load radio data.</p></div>`;
+            return;
+        }
+    }
+
+    populateRadioFilters();
+
+    // Fetch stations
+    await fetchRadioStations(selectedRadioCountry, radioSearchQuery);
+    displayRadioStations();
+}
+
+// Initialize Radio event listeners
+document.addEventListener('DOMContentLoaded', () => {
+    // Radio sidebar link handler
+    const radioLink = document.getElementById('radio-link');
+    if (radioLink) {
+        radioLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showRadio();
+
+            // Update sidebar active states
+            document.querySelectorAll('.category-link').forEach(link => {
+                link.classList.remove('bg-gray-800');
+            });
+            const liveTVLink = document.getElementById('live-tv-link');
+            if (liveTVLink) liveTVLink.classList.remove('bg-gray-800');
+            radioLink.classList.add('bg-gray-800');
+
+            // Close sidebar on mobile
+            if (window.innerWidth < 1024) {
+                closeSidebar();
+            }
+        });
+    }
+
+    // Override filter handlers when in radio mode
+    const countryFilter = document.getElementById('iptv-country-filter');
+    if (countryFilter) {
+        // Remove existing and add new handler that checks mode
+        countryFilter.addEventListener('change', async (e) => {
+            if (isRadioMode) {
+                selectedRadioCountry = e.target.value;
+                localStorage.setItem('radio-country', selectedRadioCountry);
+                mediaGrid.innerHTML = `<div class="col-span-full h-96 flex items-center justify-center"><div class="loader"></div></div>`;
+                await fetchRadioStations(selectedRadioCountry, radioSearchQuery);
+                displayRadioStations();
+            }
+        });
+    }
+
+    // Override search handler for radio mode
+    const iptvSearchInput = document.getElementById('iptv-search');
+    if (iptvSearchInput) {
+        let radioSearchTimeout;
+        iptvSearchInput.addEventListener('input', async (e) => {
+            if (isRadioMode) {
+                clearTimeout(radioSearchTimeout);
+                radioSearchTimeout = setTimeout(async () => {
+                    radioSearchQuery = e.target.value.trim();
+                    if (radioSearchQuery) {
+                        mediaGrid.innerHTML = `<div class="col-span-full h-96 flex items-center justify-center"><div class="loader"></div></div>`;
+                        await fetchRadioStations('', radioSearchQuery);
+                        displayRadioStations();
+                    } else {
+                        await fetchRadioStations(selectedRadioCountry, '');
+                        displayRadioStations();
+                    }
+                }, 300);
+            }
+        });
+    }
+});
+
+// Update popstate handler to support radio
+const originalPopstateHandler = window.onpopstate;
+window.addEventListener('popstate', async (event) => {
+    const state = getStateFromUrl();
+
+    if (state && state.mediaId && state.mediaType === 'radio') {
+        // Restore Radio station
+        if (radioStations.length === 0) {
+            await fetchRadioData();
+            await fetchRadioStations();
+        }
+        const stationId = decodeURIComponent(state.mediaId);
+        const station = radioStations.find(s => s.stationuuid === stationId);
+        if (station) {
+            playRadioStation(stationId, false);
+        } else {
+            // Station not in current list, try to fetch it
+            try {
+                const res = await fetch(`${currentRadioServer}/json/stations/byuuid/${stationId}`);
+                const stations = await res.json();
+                if (stations.length > 0) {
+                    radioStations.push(stations[0]);
+                    playRadioStation(stationId, false);
+                } else {
+                    showRadio();
+                }
+            } catch (e) {
+                showRadio();
+            }
         }
     }
 });
