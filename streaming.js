@@ -721,27 +721,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Always fetch genres
     fetchAndDisplayGenres();
 
-    // Check for saved state in URL hash
-    const state = getStateFromUrl();
-
-    if (state && state.mediaId && state.mediaType) {
-        if (state.mediaType === 'livetv') {
-            // Restore Live TV channel - need to fetch IPTV data first
-            const success = await fetchIPTVData();
-            if (success) {
-                const channelId = decodeURIComponent(state.mediaId);
-                playIPTVChannel(channelId);
-            } else {
-                showHomePage();
-            }
-        } else {
-            // Restore the movie/TV watch page from URL state
-            await showWatchPage(state.mediaId, state.mediaType, state.season, state.episode);
-        }
-    } else {
-        // Default: show home page with multiple category rows
-        showHomePage();
-    }
+    // Handle routing based on current URL state
+    handleRouting();
 });
 
 // --- IPTV Functions ---
@@ -1139,21 +1120,45 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- Handle Browser Back/Forward Button ---
-window.addEventListener('popstate', async (event) => {
-    const state = getStateFromUrl();
+// --- Handle Routing (Initial load & Back/Forward) ---
+async function handleRouting(historyState = null) {
+    const state = historyState || getStateFromUrl();
 
     if (state && state.mediaId && state.mediaType) {
         if (state.mediaType === 'livetv') {
-            // Restore Live TV channel (without adding to history)
+            // Restore Live TV channel
             if (iptvChannels.length === 0) {
                 await fetchIPTVData();
             }
             const channelId = decodeURIComponent(state.mediaId);
-            // Use playIPTVChannel with addToHistory=false to fully restore channel
             playIPTVChannel(channelId, false);
+        } else if (state.mediaType === 'radio') {
+            // Restore Radio station
+            if (radioStations.length === 0) {
+                await fetchRadioData();
+                await fetchRadioStations();
+            }
+            const stationId = decodeURIComponent(state.mediaId);
+            const station = radioStations.find(s => s.stationuuid === stationId);
+            if (station) {
+                await playRadioStation(stationId, false);
+            } else {
+                // Station not in current list, try to fetch it
+                try {
+                    const res = await fetch(`${currentRadioServer}/json/stations/byuuid/${stationId}`);
+                    const stations = await res.json();
+                    if (stations.length > 0) {
+                        radioStations.push(stations[0]);
+                        await playRadioStation(stationId, false);
+                    } else {
+                        showRadio();
+                    }
+                } catch (e) {
+                    showRadio();
+                }
+            }
         } else {
-            // Restore movie/TV watch page without modifying history
+            // Restore movie/TV watch page
             mainContent.style.display = 'none';
             watchPage.style.display = 'block';
             watchPage.scrollTop = 0;
@@ -1165,7 +1170,6 @@ window.addEventListener('popstate', async (event) => {
             // Render server selector and update video
             renderServerSelector(state.mediaId, state.mediaType);
             updateVideoSource(state.mediaId, state.mediaType);
-            // Note: NOT calling updateUrlState here to avoid adding to history
 
             const mediaData = await fetchMediaDetails(state.mediaId, state.mediaType);
             if (mediaData) {
@@ -1176,16 +1180,19 @@ window.addEventListener('popstate', async (event) => {
             }
         }
     } else {
-        // No hash - show home page
+        // No valid state - show home page
         watchPage.style.display = 'none';
         mainContent.style.display = 'block';
         watchIframe.src = "";
 
-        // Only trigger content load if grid is empty or has home page content
         if (mediaGrid.children.length === 0 || mediaGrid.querySelector('.loader') || !isHomePage) {
             showHomePage();
         }
     }
+}
+
+window.addEventListener('popstate', (event) => {
+    handleRouting(event.state);
 });
 
 // --- Radio Functions ---
@@ -1333,7 +1340,7 @@ function displayRadioStations() {
     });
 }
 
-function playRadioStation(stationId, addToHistory = true) {
+async function playRadioStation(stationId, addToHistory = true) {
     const station = radioStations.find(s => s.stationuuid === stationId);
 
     if (!station || !station.url_resolved) {
@@ -1346,16 +1353,24 @@ function playRadioStation(stationId, addToHistory = true) {
         history.pushState({ mediaType: 'radio', stationId }, '', `#radio/${encodeURIComponent(stationId)}`);
     }
 
-    displayRadioContent(station);
+    await displayRadioContent(station);
 }
 
-function displayRadioContent(station) {
+async function displayRadioContent(station) {
     mainContent.style.display = 'none';
     watchPage.style.display = 'block';
     watchPage.scrollTop = 0;
 
-    // Use the HLS player for audio streams (pass station name and type for display)
+    // Use the HLS player for audio streams
     watchIframe.src = `hls-player.html?url=${encodeURIComponent(station.url_resolved)}&name=${encodeURIComponent(station.name)}&type=radio`;
+
+    // Clear and show loading state for recommendations
+    recommendationsGrid.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-8 space-y-3">
+            <div class="loader w-8 h-8"></div>
+            <p class="text-gray-500 text-xs">Finding similar stations...</p>
+        </div>
+    `;
 
     // Update media details
     const tags = station.tags ? station.tags.split(',').slice(0, 5).join(', ') : 'Radio';
@@ -1371,25 +1386,29 @@ function displayRadioContent(station) {
         ${station.homepage ? `<a href="${station.homepage}" target="_blank" class="text-purple-400 hover:underline text-sm">Visit Station Website</a>` : ''}
     `;
 
-    // Hide TV-specific controls
     tvSeasonSelector.style.display = 'none';
     serverContainer.innerHTML = '';
 
-    // Show related stations
-    displayRadioRecommendations(station);
+    // Fetch and show related stations
+    await displayRadioRecommendations(station);
 }
 
-function displayRadioRecommendations(currentStation) {
+async function displayRadioRecommendations(currentStation) {
     // Find related stations by tags or country
     let relatedStations = [];
 
     if (currentStation.tags) {
-        const currentTags = currentStation.tags.split(',').map(t => t.trim().toLowerCase());
-        relatedStations = radioStations.filter(s =>
-            s.stationuuid !== currentStation.stationuuid &&
-            s.tags &&
-            s.tags.split(',').some(t => currentTags.includes(t.trim().toLowerCase()))
-        );
+        const currentTags = currentStation.tags.split(',')
+            .map(t => t.trim().toLowerCase())
+            .filter(t => t.length > 0);
+
+        if (currentTags.length > 0) {
+            relatedStations = radioStations.filter(s =>
+                s.stationuuid !== currentStation.stationuuid &&
+                s.tags &&
+                s.tags.split(',').some(t => currentTags.includes(t.trim().toLowerCase()))
+            );
+        }
     }
 
     // If not enough, add more from same country
@@ -1400,6 +1419,47 @@ function displayRadioRecommendations(currentStation) {
             !relatedStations.find(rs => rs.stationuuid === s.stationuuid)
         );
         relatedStations = [...relatedStations, ...countryStations];
+    }
+
+    // --- API Fallback for Niche Stations ---
+    // If we still have very few results, fetch from API
+    if (relatedStations.length < 5) {
+        // Try Tags first
+        if (currentStation.tags) {
+            try {
+                const firstTag = currentStation.tags.split(',')[0].trim();
+                if (firstTag) {
+                    const res = await fetch(`${currentRadioServer}/json/stations/bytag/${encodeURIComponent(firstTag)}?limit=20&hidebroken=true&order=votes&reverse=true`);
+                    if (res.ok) {
+                        const apiResults = await res.json();
+                        const newStations = apiResults.filter(s =>
+                            s.stationuuid !== currentStation.stationuuid &&
+                            !relatedStations.find(rs => rs.stationuuid === s.stationuuid)
+                        );
+                        relatedStations = [...relatedStations, ...newStations];
+                    }
+                }
+            } catch (e) {
+                console.warn('Tag recommendation fallback failed:', e);
+            }
+        }
+
+        // If STILL below 5, try Country
+        if (relatedStations.length < 5 && currentStation.countrycode) {
+            try {
+                const res = await fetch(`${currentRadioServer}/json/stations/bycountrycodeexact/${currentStation.countrycode}?limit=20&hidebroken=true&order=votes&reverse=true`);
+                if (res.ok) {
+                    const apiResults = await res.json();
+                    const newStations = apiResults.filter(s =>
+                        s.stationuuid !== currentStation.stationuuid &&
+                        !relatedStations.find(rs => rs.stationuuid === s.stationuuid)
+                    );
+                    relatedStations = [...relatedStations, ...newStations];
+                }
+            } catch (e) {
+                console.warn('Country recommendation fallback failed:', e);
+            }
+        }
     }
 
     relatedStations = relatedStations.slice(0, 15);
@@ -1543,35 +1603,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Update popstate handler to support radio
-const originalPopstateHandler = window.onpopstate;
-window.addEventListener('popstate', async (event) => {
-    const state = getStateFromUrl();
-
-    if (state && state.mediaId && state.mediaType === 'radio') {
-        // Restore Radio station
-        if (radioStations.length === 0) {
-            await fetchRadioData();
-            await fetchRadioStations();
-        }
-        const stationId = decodeURIComponent(state.mediaId);
-        const station = radioStations.find(s => s.stationuuid === stationId);
-        if (station) {
-            playRadioStation(stationId, false);
-        } else {
-            // Station not in current list, try to fetch it
-            try {
-                const res = await fetch(`${currentRadioServer}/json/stations/byuuid/${stationId}`);
-                const stations = await res.json();
-                if (stations.length > 0) {
-                    radioStations.push(stations[0]);
-                    playRadioStation(stationId, false);
-                } else {
-                    showRadio();
-                }
-            } catch (e) {
-                showRadio();
-            }
-        }
-    }
-});
