@@ -3,12 +3,12 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Configuration ---
     const POPUNDER_COOLDOWN = 60 * 1000; // 1 minute
-    const ADSTERRA_POPUNDER_URL = 'https://pl28272609.effectivegatecpm.com/90/0b/f0/900bf089181de5a48c5513802b96b571.js';
+    const ADSTERRA_POPUNDER_URL = 'https://zoologicalmanufacture.com/90/0b/f0/900bf089181de5a48c5513802b96b571.js';
 
     // [NEW] Mobile Banner Configuration
     // Go to Adsterra -> Create Ad Unit -> Select "300x250" or "Social Bar" -> Get the Script URL (src="...")
     // Paste the URL inside the quotes below:
-    const MOBILE_BANNER_SCRIPT_URL = 'https://pl28299919.effectivegatecpm.com/5e/e7/07/5ee70790e1828830343369cc1131861d.js'; // Social Bar
+    const MOBILE_BANNER_SCRIPT_URL = 'https://zoologicalmanufacture.com/5e/e7/07/5ee70790e1828830343369cc1131861d.js'; // Social Bar
 
     // --- 1. Rate Limited Popunder Logic ---
     const originalOpen = window.open;
@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const script = document.createElement('script');
         script.async = true;
         script.dataset.cfasync = "false";
-        script.src = "https://pl28272667.effectivegatecpm.com/588222232af6cc574ea3617b0afa49a3/invoke.js";
+        script.src = "https://zoologicalmanufacture.com/588222232af6cc574ea3617b0afa49a3/invoke.js";
         middleBanner.appendChild(script);
 
         console.log('Middle Banner Ad Zone Ready');
