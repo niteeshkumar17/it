@@ -43,6 +43,73 @@ const STREAM_BASE_URLS = {
     tv: 'https://vidsrc.xyz/embed/tv?tmdb='
 };
 
+// --- IPTV API Configuration ---
+const IPTV_API = {
+    channels: 'https://iptv-org.github.io/api/channels.json',
+    countries: 'https://iptv-org.github.io/api/countries.json',
+    languages: 'https://iptv-org.github.io/api/languages.json',
+    streams: 'https://iptv-org.github.io/api/streams.json',
+    categories: 'https://iptv-org.github.io/api/categories.json',
+    logos: 'https://iptv-org.github.io/api/logos.json'
+};
+
+// --- IPTV State ---
+let iptvChannels = [];
+let iptvCountries = [];
+let iptvLanguages = [];
+let iptvStreams = [];
+let iptvCategories = [];
+let selectedCountry = '';
+let selectedCategory = '';
+let iptvSearchQuery = '';
+let isLiveTVMode = false;
+
+// --- Fuzzy Search Helper ---
+function fuzzyMatch(str, query) {
+    if (!query) return true;
+    if (!str) return false;
+
+    str = str.toLowerCase();
+    query = query.toLowerCase();
+
+    // Direct contains match
+    if (str.includes(query)) return true;
+
+    // Calculate similarity using Levenshtein-like approach
+    const strWords = str.split(/\s+/);
+
+    for (const word of strWords) {
+        // Check if query is similar to any word in the string
+        const similarity = calculateSimilarity(word, query);
+        if (similarity >= 0.6) return true; // 60% match threshold
+    }
+
+    return false;
+}
+
+function calculateSimilarity(str1, str2) {
+    const longer = str1.length > str2.length ? str1 : str2;
+    const shorter = str1.length > str2.length ? str2 : str1;
+
+    if (longer.length === 0) return 1.0;
+
+    // Simple character matching approach for performance
+    let matches = 0;
+    const shorterChars = shorter.split('');
+    const longerChars = longer.split('');
+
+    for (let i = 0; i < shorterChars.length; i++) {
+        if (longerChars.includes(shorterChars[i])) {
+            matches++;
+            // Remove matched char to prevent double counting
+            const idx = longerChars.indexOf(shorterChars[i]);
+            longerChars.splice(idx, 1);
+        }
+    }
+
+    return matches / longer.length;
+}
+
 // --- DOM Elements ---
 const mainContent = document.getElementById('main-content');
 const mediaGrid = document.getElementById('media-grid');
@@ -77,11 +144,11 @@ function updateUrlState(mediaId, mediaType, season = null, episode = null) {
     if (mediaType === 'tv' && season && episode) {
         hash += `/${season}/${episode}`;
     }
-    history.replaceState(null, '', hash);
+    history.pushState({ mediaId, mediaType, season, episode }, '', hash);
 }
 
 function clearUrlState() {
-    history.replaceState(null, '', window.location.pathname);
+    history.pushState(null, '', window.location.pathname);
 }
 
 function getStateFromUrl() {
@@ -102,7 +169,109 @@ function getFullApiUrl(baseUrl, page = 1) {
     return `${baseUrl}${separator}api_key=${API_KEY}&page=${page}`;
 }
 
+// Home page category configuration
+const HOME_CATEGORIES = [
+    { title: 'Hindi Movies', url: `${BASE_URL}/discover/movie?with_original_language=hi&sort_by=popularity.desc`, type: 'movie' },
+    { title: 'Top Rated Movies', url: `${BASE_URL}/movie/top_rated`, type: 'movie' },
+    { title: 'Upcoming Movies', url: `${BASE_URL}/movie/upcoming`, type: 'movie' },
+    { title: 'Popular TV Shows', url: `${BASE_URL}/tv/popular`, type: 'tv' },
+    { title: 'Top Rated TV Shows', url: `${BASE_URL}/tv/top_rated`, type: 'tv' },
+    { title: 'Airing Today', url: `${BASE_URL}/tv/airing_today`, type: 'tv' }
+];
+
+let isHomePage = false;
+
+async function showHomePage() {
+    isLiveTVMode = false;
+    isHomePage = true;
+
+    // Hide IPTV filters
+    const filtersContainer = document.getElementById('iptv-filters');
+    if (filtersContainer) {
+        filtersContainer.style.display = 'none';
+    }
+
+    showGridView();
+    pageTitle.textContent = '';
+    mediaGrid.innerHTML = `<div class="col-span-full h-96 flex items-center justify-center"><div class="loader"></div></div>`;
+
+    // Fetch all categories in parallel
+    try {
+        const categoryPromises = HOME_CATEGORIES.map(async (category) => {
+            const url = getFullApiUrl(category.url, 1);
+            const res = await fetch(url);
+            const data = await res.json();
+            return { ...category, results: data.results.slice(0, 10) };
+        });
+
+        const categories = await Promise.all(categoryPromises);
+
+        // Render all category rows
+        mediaGrid.innerHTML = categories.map((category, index) => `
+            <div class="col-span-full mb-6">
+                <div class="flex justify-between items-center mb-3 px-1">
+                    <h3 class="text-lg sm:text-xl font-bold text-white">${category.title}</h3>
+                    <button class="view-more-btn text-sm text-red-400 hover:text-red-300 transition-colors" 
+                            data-category-index="${index}">
+                        View More →
+                    </button>
+                </div>
+                <div class="relative">
+                    <div class="flex overflow-x-auto gap-3 pb-3 no-scrollbar">
+                        ${category.results.map(item => createHorizontalCard(item, category.type)).join('')}
+                    </div>
+                    <div class="absolute top-0 right-0 w-12 h-full bg-gradient-to-l from-[#0f0f0f] to-transparent pointer-events-none hidden lg:block"></div>
+                </div>
+            </div>
+        `).join('');
+
+        // Add click handlers for movie cards
+        mediaGrid.querySelectorAll('.home-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const mediaId = card.dataset.mediaId;
+                const type = card.dataset.mediaType;
+                showWatchPage(mediaId, type);
+            });
+        });
+
+        // Add click handlers for View More buttons
+        mediaGrid.querySelectorAll('.view-more-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const index = parseInt(btn.dataset.categoryIndex);
+                const category = categories[index];
+                fetchMedia(category.url, category.title, category.type);
+            });
+        });
+
+    } catch (error) {
+        console.error('Failed to load home page:', error);
+        mediaGrid.innerHTML = `<div class="col-span-full text-center text-red-500"><p>Failed to load content.</p></div>`;
+    }
+}
+
+function createHorizontalCard(item, mediaType) {
+    const title = item.title || item.name;
+    const poster = item.poster_path ? IMG_URL + item.poster_path : 'https://placehold.co/500x750/0f0f0f/ffffff?text=No+Image';
+    return `
+        <div class="home-card flex-shrink-0 w-32 sm:w-40 cursor-pointer group" data-media-id="${item.id}" data-media-type="${mediaType}">
+            <div class="relative overflow-hidden rounded-lg shadow-lg">
+                <img src="${poster}" alt="${title}" class="w-full h-auto object-cover aspect-[2/3] group-hover:scale-105 transition-transform duration-300" onerror="this.src='https://placehold.co/500x750/0f0f0f/ffffff?text=Error';">
+                <div class="absolute bottom-1 right-1 bg-black bg-opacity-80 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">${item.vote_average ? item.vote_average.toFixed(1) : 'N/A'}</div>
+            </div>
+            <h4 class="text-xs sm:text-sm font-medium text-gray-200 mt-2 line-clamp-2">${title}</h4>
+        </div>
+    `;
+}
+
+
 async function fetchMedia(url, title, mediaType) {
+    isLiveTVMode = false;
+    isHomePage = false;
+    // Hide IPTV filters when switching to movie/TV mode
+    const filtersContainer = document.getElementById('iptv-filters');
+    if (filtersContainer) {
+        filtersContainer.style.display = 'none';
+    }
     showGridView();
     mediaGrid.innerHTML = `<div class="col-span-full h-96 flex items-center justify-center"><div class="loader"></div></div>`;
     pageTitle.textContent = title;
@@ -121,6 +290,8 @@ async function fetchMedia(url, title, mediaType) {
 }
 
 async function fetchMoreMedia() {
+    // Don't load more movies when in Live TV mode
+    if (isLiveTVMode) return;
     if (isLoading || currentPage >= totalPages) return;
     isLoading = true;
     infiniteLoader.style.display = 'flex';
@@ -287,6 +458,9 @@ function displayMedia(mediaItems, mediaType) {
 }
 
 function appendMedia(mediaItems, mediaType) {
+    // Don't append movies when in Live TV mode
+    if (isLiveTVMode) return;
+
     const mediaHtml = mediaItems.map(item => createMediaCard(item, item.media_type || mediaType)).join('');
     mediaGrid.insertAdjacentHTML('beforeend', mediaHtml);
     document.querySelectorAll('.media-card').forEach(card => {
@@ -455,6 +629,17 @@ searchInput.addEventListener('input', (e) => {
     clearTimeout(searchTimeout);
     const searchTerm = e.target.value.trim();
     searchTimeout = setTimeout(() => {
+        // If in Live TV mode, redirect search to IPTV search instead
+        if (isLiveTVMode) {
+            const iptvSearchInput = document.getElementById('iptv-search');
+            if (iptvSearchInput) {
+                iptvSearchInput.value = searchTerm;
+                iptvSearchQuery = searchTerm;
+                displayIPTVChannels();
+            }
+            return;
+        }
+
         document.querySelectorAll('.category-link').forEach(l => l.classList.remove('bg-gray-800'));
         closeGenreDropdown();
         if (searchTerm) {
@@ -474,13 +659,13 @@ document.querySelectorAll('.category-link[data-category]').forEach(link => {
         const mediaType = link.dataset.type;
         const title = link.querySelector('span').textContent;
 
-        let url;
+        // Home button - show multi-row home page
         if (category === 'hindi') {
-            url = `${BASE_URL}/discover/movie?with_original_language=hi&sort_by=popularity.desc`;
-        } else {
-            url = `${BASE_URL}/${mediaType}/${category}`;
+            showHomePage();
+            return;
         }
 
+        const url = `${BASE_URL}/${mediaType}/${category}`;
         fetchMedia(url, title, mediaType);
     });
 });
@@ -491,7 +676,7 @@ genreDropdownBtn.addEventListener('click', () => {
 });
 
 homeLogoButton.addEventListener('click', () => {
-    document.querySelector('.category-link[data-category="hindi"][data-type="movie"]').click();
+    showHomePage();
 });
 
 // --- Mobile Sidebar Logic ---
@@ -524,11 +709,433 @@ document.addEventListener('DOMContentLoaded', async () => {
     const state = getStateFromUrl();
 
     if (state && state.mediaId && state.mediaType) {
-        // Restore the watch page from URL state
-        await showWatchPage(state.mediaId, state.mediaType, state.season, state.episode);
+        if (state.mediaType === 'livetv') {
+            // Restore Live TV channel - need to fetch IPTV data first
+            const success = await fetchIPTVData();
+            if (success) {
+                const channelId = decodeURIComponent(state.mediaId);
+                playIPTVChannel(channelId);
+            } else {
+                showHomePage();
+            }
+        } else {
+            // Restore the movie/TV watch page from URL state
+            await showWatchPage(state.mediaId, state.mediaType, state.season, state.episode);
+        }
     } else {
-        // Default: show hindi movies
-        document.querySelector('.category-link[data-category="hindi"][data-type="movie"]').click();
+        // Default: show home page with multiple category rows
+        showHomePage();
     }
 });
 
+// --- IPTV Functions ---
+async function fetchIPTVData() {
+    try {
+        const [channelsRes, countriesRes, languagesRes, streamsRes, categoriesRes, logosRes] = await Promise.all([
+            fetch(IPTV_API.channels),
+            fetch(IPTV_API.countries),
+            fetch(IPTV_API.languages),
+            fetch(IPTV_API.streams),
+            fetch(IPTV_API.categories),
+            fetch(IPTV_API.logos)
+        ]);
+
+        iptvChannels = await channelsRes.json();
+        iptvCountries = await countriesRes.json();
+        iptvLanguages = await languagesRes.json();
+        iptvStreams = await streamsRes.json();
+        iptvCategories = await categoriesRes.json();
+        const iptvLogos = await logosRes.json();
+
+        // Create a map of channel ID to logo URL for quick lookup
+        const logoMap = {};
+        iptvLogos.forEach(logo => {
+            if (logo.channel && logo.url) {
+                // Use the first logo for each channel (they're sorted by quality)
+                if (!logoMap[logo.channel]) {
+                    logoMap[logo.channel] = logo.url;
+                }
+            }
+        });
+
+        // Merge logos with channels
+        iptvChannels = iptvChannels.map(channel => ({
+            ...channel,
+            logo: logoMap[channel.id] || null
+        }));
+
+        return true;
+    } catch (error) {
+        console.error('Failed to fetch IPTV data:', error);
+        return false;
+    }
+}
+
+
+function populateIPTVFilters() {
+    const countryFilter = document.getElementById('iptv-country-filter');
+    const categoryFilter = document.getElementById('iptv-category-filter');
+
+    if (!countryFilter) return;
+
+    // Restore saved selections from localStorage
+    selectedCountry = localStorage.getItem('iptv-country') || '';
+    selectedCategory = localStorage.getItem('iptv-category') || '';
+
+    // Populate countries
+    const sortedCountries = [...iptvCountries].sort((a, b) => a.name.localeCompare(b.name));
+    countryFilter.innerHTML = '<option value="">All Countries</option>' +
+        sortedCountries.map(c => `<option value="${c.code}" ${c.code === selectedCountry ? 'selected' : ''}>${c.flag} ${c.name}</option>`).join('');
+
+    // Populate categories
+    if (categoryFilter && iptvCategories.length > 0) {
+        const sortedCategories = [...iptvCategories].sort((a, b) => a.name.localeCompare(b.name));
+        categoryFilter.innerHTML = '<option value="">All Categories</option>' +
+            sortedCategories.map(c => `<option value="${c.id}" ${c.id === selectedCategory ? 'selected' : ''}>${c.name}</option>`).join('');
+    }
+}
+
+
+
+function getChannelStreamUrl(channelId) {
+    const stream = iptvStreams.find(s => s.channel === channelId);
+    return stream ? stream.url : null;
+}
+
+function displayIPTVChannels() {
+    let filteredChannels = [...iptvChannels];
+
+    // Filter by country
+    if (selectedCountry) {
+        filteredChannels = filteredChannels.filter(c => c.country === selectedCountry);
+    }
+
+    // Filter by category
+    if (selectedCategory) {
+        filteredChannels = filteredChannels.filter(c =>
+            c.categories && c.categories.includes(selectedCategory)
+        );
+    }
+
+    // Filter by search query (fuzzy match)
+    if (iptvSearchQuery) {
+        filteredChannels = filteredChannels.filter(c =>
+            fuzzyMatch(c.name, iptvSearchQuery) ||
+            fuzzyMatch(c.id, iptvSearchQuery)
+        );
+    }
+
+
+    // Filter to only channels with streams
+    const channelsWithStreams = filteredChannels.filter(channel => {
+        return iptvStreams.some(s => s.channel === channel.id);
+    });
+
+    // Limit to first 100 for performance
+    const displayChannels = channelsWithStreams.slice(0, 100);
+
+    if (displayChannels.length === 0) {
+        mediaGrid.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <p class="text-gray-400 text-lg">No channels found matching your filters.</p>
+                <p class="text-gray-500 text-sm mt-2">Try adjusting your country or language filters.</p>
+            </div>
+        `;
+        return;
+    }
+
+    mediaGrid.innerHTML = displayChannels.map(channel => {
+        const country = iptvCountries.find(c => c.code === channel.country);
+        const countryFlag = country ? country.flag : '🌐';
+        const logo = channel.logo;
+        const initial = channel.name.charAt(0).toUpperCase();
+        // Generate a consistent color based on channel name
+        const colors = ['from-red-600 to-pink-600', 'from-blue-600 to-purple-600', 'from-green-600 to-teal-600', 'from-orange-600 to-red-600', 'from-indigo-600 to-blue-600', 'from-pink-600 to-rose-600'];
+        const colorIndex = channel.name.charCodeAt(0) % colors.length;
+        const gradientClass = colors[colorIndex];
+
+        return `
+            <div class="media-card group cursor-pointer bg-gray-900 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105" 
+                 data-channel-id="${channel.id}">
+                <div class="relative aspect-video bg-gray-800">
+                    ${logo ?
+                `<img src="${logo}" alt="${channel.name}" 
+                             class="w-full h-full object-contain p-2"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                         <div class="absolute inset-0 bg-gradient-to-br ${gradientClass} items-center justify-center" style="display: none;">
+                             <span class="text-4xl font-bold text-white">${initial}</span>
+                         </div>`
+                :
+                `<div class="absolute inset-0 bg-gradient-to-br ${gradientClass} flex items-center justify-center">
+                             <span class="text-4xl font-bold text-white">${initial}</span>
+                         </div>`
+            }
+                    <div class="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                        <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                        LIVE
+                    </div>
+                    <div class="absolute bottom-2 right-2 text-lg">${countryFlag}</div>
+                </div>
+                <div class="p-3">
+                    <h3 class="font-semibold text-sm text-white truncate group-hover:text-red-400 transition-colors">${channel.name}</h3>
+                    <p class="text-xs text-gray-400 mt-1">${channel.categories ? channel.categories.join(', ') : 'General'}</p>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Add click handlers for channels
+    mediaGrid.querySelectorAll('.media-card[data-channel-id]').forEach(card => {
+        card.addEventListener('click', () => {
+            const channelId = card.dataset.channelId;
+            playIPTVChannel(channelId);
+        });
+    });
+}
+
+function playIPTVChannel(channelId, addToHistory = true) {
+    const channel = iptvChannels.find(c => c.id === channelId);
+    const streamUrl = getChannelStreamUrl(channelId);
+
+    if (!channel || !streamUrl) {
+        alert('Stream not available for this channel.');
+        return;
+    }
+
+    // Only update history if explicitly requested (not from popstate)
+    if (addToHistory) {
+        history.pushState({ mediaType: 'livetv', channelId }, '', `#livetv/${encodeURIComponent(channelId)}`);
+    }
+
+    displayIPTVChannelContent(channel, streamUrl);
+}
+
+function displayIPTVChannelContent(channel, streamUrl) {
+    const country = iptvCountries.find(c => c.code === channel.country);
+    const countryName = country ? country.name : 'Unknown';
+
+    mainContent.style.display = 'none';
+    watchPage.style.display = 'block';
+    watchPage.scrollTop = 0;
+
+    // Use local HLS player page
+    watchIframe.src = `hls-player.html?url=${encodeURIComponent(streamUrl)}`;
+
+    // Update media details
+    mediaDetails.innerHTML = `
+        <h1 class="text-xl sm:text-2xl font-bold text-white mb-2">${channel.name}</h1>
+        <div class="flex items-center gap-3 text-sm text-gray-400 mb-4">
+            <span class="bg-red-600 text-white px-2 py-0.5 rounded text-xs">LIVE TV</span>
+            <span>${countryName}</span>
+            <span>${channel.categories ? channel.categories.join(', ') : 'General'}</span>
+        </div>
+        ${channel.website ? `<a href="${channel.website}" target="_blank" class="text-red-400 hover:underline text-sm">Visit Channel Website</a>` : ''}
+    `;
+
+    // Hide TV-specific controls
+    tvSeasonSelector.style.display = 'none';
+    serverContainer.innerHTML = '';
+
+    // Show related channels as recommendations
+    displayIPTVRecommendations(channel);
+}
+
+function displayIPTVRecommendations(currentChannel) {
+    let relatedChannels = [];
+
+    // FIRST: Find channels from the same CATEGORY (most relevant for content)
+    if (currentChannel.categories && currentChannel.categories.length > 0) {
+        const categoryChannels = iptvChannels.filter(c =>
+            c.id !== currentChannel.id &&
+            c.categories &&
+            c.categories.some(cat => currentChannel.categories.includes(cat)) &&
+            iptvStreams.some(s => s.channel === c.id)
+        );
+
+        // Prioritize same category + same country
+        const sameCountryCategoryChannels = categoryChannels.filter(c => c.country === currentChannel.country);
+        const otherCategoryChannels = categoryChannels.filter(c => c.country !== currentChannel.country);
+
+        relatedChannels = [...sameCountryCategoryChannels, ...otherCategoryChannels];
+    }
+
+    // SECOND: If not enough, add more from same country (any category)
+    if (relatedChannels.length < 15) {
+        const countryChannels = iptvChannels.filter(c =>
+            c.id !== currentChannel.id &&
+            c.country === currentChannel.country &&
+            iptvStreams.some(s => s.channel === c.id) &&
+            !relatedChannels.find(rc => rc.id === c.id)
+        );
+        relatedChannels = [...relatedChannels, ...countryChannels];
+    }
+
+    // Limit to 15 recommendations
+    relatedChannels = relatedChannels.slice(0, 15);
+
+    if (relatedChannels.length === 0) {
+        recommendationsGrid.innerHTML = '<p class="text-gray-500 text-sm">No related channels found.</p>';
+        return;
+    }
+
+    // Update title to show category
+    const categoryName = currentChannel.categories && currentChannel.categories.length > 0
+        ? currentChannel.categories[0].charAt(0).toUpperCase() + currentChannel.categories[0].slice(1)
+        : 'More';
+    recommendationTitle.textContent = `More ${categoryName} Channels`;
+
+    recommendationsGrid.innerHTML = relatedChannels.map(channel => {
+        const country = iptvCountries.find(c => c.code === channel.country);
+        const countryFlag = country ? country.flag : '🌐';
+        const logo = channel.logo || '';
+
+        return `
+            <div class="recommendation-card flex items-center p-2 rounded-lg cursor-pointer hover:bg-gray-800 transition-colors" 
+                 data-rec-channel-id="${channel.id}">
+                <div class="w-16 h-10 bg-gray-800 rounded flex-shrink-0 flex items-center justify-center overflow-hidden">
+                    ${logo ? `<img src="${logo}" alt="${channel.name}" class="w-full h-full object-contain p-1" onerror="this.parentElement.innerHTML='${countryFlag}'">` : `<span class="text-lg">${countryFlag}</span>`}
+                </div>
+                <div class="ml-3 flex-1 min-w-0">
+                    <h4 class="text-sm font-medium text-white truncate">${channel.name}</h4>
+                    <p class="text-xs text-gray-400">${channel.categories ? channel.categories[0] : 'General'}</p>
+                </div>
+                <span class="bg-red-600 text-white text-xs px-1.5 py-0.5 rounded ml-2">LIVE</span>
+            </div>
+        `;
+    }).join('');
+
+    // Add click handlers
+    recommendationsGrid.querySelectorAll('.recommendation-card[data-rec-channel-id]').forEach(card => {
+        card.addEventListener('click', () => {
+            playIPTVChannel(card.dataset.recChannelId);
+        });
+    });
+}
+
+async function showLiveTV() {
+    isLiveTVMode = true;
+    showGridView();
+    pageTitle.textContent = 'Live TV Channels';
+    mediaGrid.innerHTML = `<div class="col-span-full h-96 flex items-center justify-center"><div class="loader"></div></div>`;
+
+    // Show filters
+    const filtersContainer = document.getElementById('iptv-filters');
+    if (filtersContainer) {
+        filtersContainer.style.display = 'flex';
+    }
+
+    if (iptvChannels.length === 0) {
+        const success = await fetchIPTVData();
+        if (!success) {
+            mediaGrid.innerHTML = `<div class="col-span-full text-center text-red-500"><p>Failed to load channels.</p></div>`;
+            return;
+        }
+        populateIPTVFilters();
+    }
+
+    displayIPTVChannels();
+}
+
+// Initialize IPTV filter event listeners
+document.addEventListener('DOMContentLoaded', () => {
+    const countryFilter = document.getElementById('iptv-country-filter');
+    const categoryFilter = document.getElementById('iptv-category-filter');
+
+    if (countryFilter) {
+        countryFilter.addEventListener('change', (e) => {
+            selectedCountry = e.target.value;
+            localStorage.setItem('iptv-country', selectedCountry);
+            displayIPTVChannels();
+        });
+    }
+
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', (e) => {
+            selectedCategory = e.target.value;
+            localStorage.setItem('iptv-category', selectedCategory);
+            displayIPTVChannels();
+        });
+    }
+
+    // IPTV Search input handler with debounce
+    const iptvSearchInput = document.getElementById('iptv-search');
+    let searchTimeout;
+    if (iptvSearchInput) {
+        iptvSearchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                iptvSearchQuery = e.target.value.trim();
+                displayIPTVChannels();
+            }, 300); // 300ms debounce
+        });
+    }
+
+    // Live TV sidebar link handler
+    const liveTVLink = document.getElementById('live-tv-link');
+    if (liveTVLink) {
+        liveTVLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showLiveTV();
+
+            // Update sidebar active states
+            document.querySelectorAll('.category-link').forEach(link => {
+                link.classList.remove('bg-gray-800');
+            });
+            liveTVLink.classList.add('bg-gray-800');
+
+            // Close sidebar on mobile
+            if (window.innerWidth < 1024) {
+                closeSidebar();
+            }
+        });
+    }
+});
+
+// --- Handle Browser Back/Forward Button ---
+window.addEventListener('popstate', async (event) => {
+    const state = getStateFromUrl();
+
+    if (state && state.mediaId && state.mediaType) {
+        if (state.mediaType === 'livetv') {
+            // Restore Live TV channel (without adding to history)
+            if (iptvChannels.length === 0) {
+                await fetchIPTVData();
+            }
+            const channelId = decodeURIComponent(state.mediaId);
+            // Use playIPTVChannel with addToHistory=false to fully restore channel
+            playIPTVChannel(channelId, false);
+        } else {
+            // Restore movie/TV watch page without modifying history
+            mainContent.style.display = 'none';
+            watchPage.style.display = 'block';
+            watchPage.scrollTop = 0;
+
+            // Reset state
+            currentSeason = state.season ? parseInt(state.season) : 1;
+            currentEpisode = state.episode ? parseInt(state.episode) : 1;
+
+            // Render server selector and update video
+            renderServerSelector(state.mediaId, state.mediaType);
+            updateVideoSource(state.mediaId, state.mediaType);
+            // Note: NOT calling updateUrlState here to avoid adding to history
+
+            const mediaData = await fetchMediaDetails(state.mediaId, state.mediaType);
+            if (mediaData) {
+                if (state.mediaType === 'tv') {
+                    displaySeasonSelector(mediaData, state.mediaId, currentSeason, currentEpisode);
+                }
+                await fetchRecommendations(state.mediaId, state.mediaType, mediaData.genres);
+            }
+        }
+    } else {
+        // No hash - show home page
+        watchPage.style.display = 'none';
+        mainContent.style.display = 'block';
+        watchIframe.src = "";
+
+        // Only trigger content load if grid is empty or has home page content
+        if (mediaGrid.children.length === 0 || mediaGrid.querySelector('.loader') || !isHomePage) {
+            showHomePage();
+        }
+    }
+});

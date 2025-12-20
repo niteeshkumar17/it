@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live TV Player</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        #player-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+
+        .error-message {
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .error-message h2 {
+            color: #e53e3e;
+            margin-bottom: 10px;
+        }
+
+        .error-message p {
+            color: #999;
+        }
+
+        .loading {
+            color: #fff;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="player-container">
+        <div class="loading" id="loading">Loading stream...</div>
+        <video id="video" controls autoplay playsinline style="display: none;"></video>
+        <div class="error-message" id="error" style="display: none;">
+            <h2>Stream Unavailable</h2>
+            <p>This channel's stream could not be loaded. It may be offline or geo-restricted.</p>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const streamUrl = urlParams.get('url');
+        const video = document.getElementById('video');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+
+        function showError() {
+            loading.style.display = 'none';
+            video.style.display = 'none';
+            error.style.display = 'block';
+        }
+
+        function showVideo() {
+            loading.style.display = 'none';
+            error.style.display = 'none';
+            video.style.display = 'block';
+        }
+
+        if (!streamUrl) {
+            showError();
+        } else if (Hls.isSupported()) {
+            const hls = new Hls({
+                debug: false,
+                enableWorker: true,
+                lowLatencyMode: true,
+            });
+
+            hls.loadSource(streamUrl);
+            hls.attachMedia(video);
+
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                showVideo();
+                video.play().catch(e => console.log('Autoplay prevented:', e));
+            });
+
+            hls.on(Hls.Events.ERROR, (event, data) => {
+                if (data.fatal) {
+                    switch (data.type) {
+                        case Hls.ErrorTypes.NETWORK_ERROR:
+                            console.log('Network error, trying to recover...');
+                            hls.startLoad();
+                            break;
+                        case Hls.ErrorTypes.MEDIA_ERROR:
+                            console.log('Media error, trying to recover...');
+                            hls.recoverMediaError();
+                            break;
+                        default:
+                            showError();
+                            hls.destroy();
+                            break;
+                    }
+                }
+            });
+
+            // Timeout fallback
+            setTimeout(() => {
+                if (loading.style.display !== 'none') {
+                    showError();
+                }
+            }, 15000);
+
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            // Native HLS support (Safari)
+            video.src = streamUrl;
+            video.addEventListener('loadedmetadata', () => {
+                showVideo();
+                video.play().catch(e => console.log('Autoplay prevented:', e));
+            });
+            video.addEventListener('error', showError);
+        } else {
+            showError();
+        }
+    </script>
+</body>
+
+</html>

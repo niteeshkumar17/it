@@ -243,6 +243,17 @@
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg><span class="font-medium">Airing Today</span></a>
+
+                    <p class="px-3 py-2 mt-4 text-xs font-semibold text-gray-500 tracking-wider uppercase">Live TV</p>
+                    <a href="#" id="live-tv-link" class="flex items-center p-3 mt-1 rounded-lg hover:bg-gray-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z" />
+                        </svg>
+                        <span class="font-medium">Live Channels</span>
+                        <span class="ml-auto bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">LIVE</span>
+                    </a>
                 </nav>
                 <div class="p-2 mt-2 border-t border-gray-800">
                     <button id="genre-dropdown-btn"
@@ -267,6 +278,47 @@
             </aside>
 
             <main id="main-content" class="flex-1 p-2 sm:p-4 md:p-6 lg:p-8 overflow-y-auto bg-[#0f0f0f]">
+                <div id="iptv-filters"
+                    class="mb-4 sm:mb-6 bg-gray-900/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 backdrop-blur-sm border border-gray-800"
+                    style="display: none;">
+                    <!-- Filters Row - Search icon + 2 dropdowns in one row -->
+                    <div class="grid grid-cols-[auto_1fr_1fr] sm:grid-cols-[1fr_1fr_1fr] gap-2 sm:gap-3 items-stretch">
+                        <!-- Search - Icon only on mobile, full input on desktop -->
+                        <div class="relative flex">
+                            <input type="text" id="iptv-search" placeholder="Search..."
+                                class="w-12 sm:w-full bg-gray-800 text-white text-sm sm:text-base rounded-lg sm:rounded-xl px-3 sm:pl-10 sm:pr-4 py-3 border border-gray-700 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all placeholder-transparent sm:placeholder-gray-400 text-center sm:text-left cursor-pointer sm:cursor-text">
+                            <svg class="absolute left-1/2 sm:left-3 top-1/2 transform -translate-x-1/2 sm:translate-x-0 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                        <!-- Country Filter -->
+                        <div class="relative">
+                            <select id="iptv-country-filter"
+                                class="w-full bg-gray-800 text-white text-sm sm:text-base rounded-lg sm:rounded-xl px-3 sm:px-4 py-3 border border-gray-700 focus:border-red-500 focus:outline-none cursor-pointer appearance-none hover:bg-gray-700 transition-colors h-full">
+                                <option value="">All Countries</option>
+                            </select>
+                            <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                        <!-- Category Filter -->
+                        <div class="relative">
+                            <select id="iptv-category-filter"
+                                class="w-full bg-gray-800 text-white text-sm sm:text-base rounded-lg sm:rounded-xl px-3 sm:px-4 py-3 border border-gray-700 focus:border-red-500 focus:outline-none cursor-pointer appearance-none hover:bg-gray-700 transition-colors h-full">
+                                <option value="">All Categories</option>
+                            </select>
+                            <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
                 <h2 id="page-title"
                     class="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 md:mb-6 text-gray-300 px-1">Popular
                     Movies</h2>
