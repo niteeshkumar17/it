@@ -74,17 +74,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const bannerContainer = bottomBanner.querySelector('div') || bottomBanner;
 
             if (MOBILE_BANNER_SCRIPT_URL) {
-                // Clear any placeholder
+                // Clear the container logic - Social Bar works best appended to body
                 bannerContainer.innerHTML = '';
 
-                // Inject the mobile banner script
+                // Inject the mobile banner script directly to body
+                // This matches "Insert it right above the closing </body> tag"
                 const script = document.createElement('script');
                 script.type = 'text/javascript';
                 script.src = MOBILE_BANNER_SCRIPT_URL;
                 script.async = true;
-                bannerContainer.appendChild(script);
+                document.body.appendChild(script);
 
-                console.log('Mobile Banner Script Injected');
+                console.log('Mobile Banner (Social Bar) Script Injected to Body');
             } else {
                 // Placeholder to correct layout if no ad is set
                 bannerContainer.innerHTML = `
