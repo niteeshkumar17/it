@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const popunderScript = document.createElement('script');
         popunderScript.type = 'text/javascript';
         popunderScript.src = ADSTERRA_POPUNDER_URL;
-        document.body.appendChild(popunderScript);
+        document.head.appendChild(popunderScript);
         console.log('Popunder Script Injected with Rate Limiting');
     }
 
