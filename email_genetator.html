@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TempMail Pro - Niteesh Kumar</title>
+    <style>
+        /* Base Styles */
+        :root {
+            --primary-color: #3498DB;
+            --secondary-color: #2ECC71;
+            --danger-color: #E74C3C;
+            --warning-color: #F39C12;
+            --dark-primary: #2980B9;
+            --dark-secondary: #27AE60;
+            --dark-danger: #C0392B;
+            --shadow: 0 4px 8px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            background-color: #f5f7fa;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            color: #333;
+            padding-top: 60px; /* Account for fixed navbar */
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #0095f6;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            height: 60px;
+            box-sizing: border-box;
+            justify-content: space-between;
+        }
+
+        .home-button {
+            color: #fff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .home-icon {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .donate-button {
+            color: #fff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            background: transparent;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+        }
+
+        .donate-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .donate-icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* UPI Popup Styles */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        .upi-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #262626;
+            padding: 25px;
+            border-radius: 12px;
+            z-index: 1001;
+            width: 90%;
+            max-width: 420px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -45%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
+        .upi-popup.show {
+            display: block;
+        }
+
+        .upi-popup h3 {
+            color: #fff;
+            margin-bottom: 20px;
+            font-size: 18px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .upi-option {
+            background: #333;
+            padding: 15px;
+            margin: 12px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid transparent;
+        }
+
+        .upi-option:hover {
+            background: #3a3a3a;
+            border-color: #0095f6;
+            transform: translateY(-2px);
+        }
+
+        .upi-details {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .upi-option p {
+            margin: 0;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .upi-option .upi-id {
+            color: #0095f6;
+            font-weight: 500;
+            font-size: 13px;
+            margin-top: 3px;
+            word-break: break-all;
+        }
+
+        .close-popup {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            color: #8e8e8e;
+            cursor: pointer;
+            font-size: 22px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+
+        .close-popup:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .upi-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            background: #fff;
+            padding: 4px;
+        }
+
+        .qr-code {
+            width: 90px;
+            height: 90px;
+            border-radius: 4px;
+            border: 1px solid #4a4a4a;
+        }
+
+        .copy-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            z-index: 1002;
+            display: none;
+            font-size: 14px;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; bottom: 0; }
+            to { opacity: 1; bottom: 20px; }
+        }
+
+        /* Banner Styles */
+        .banner {
+            background: linear-gradient(135deg, #b8e1fc 0%, #a8c8ff 100%);
+            padding: 25px 30px;
+            box-shadow: inset 0 -5px 5px -5px rgba(0,0,0,0.1);
+            text-align: left;
+            z-index: 5;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .banner::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+        }
+
+        .banner h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            color: #2c3e50;
+            font-weight: 600;
+            position: relative;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
+        }
+
+        .banner p {
+            margin: 10px 0;
+            font-size: 1.1rem;
+            color: #2c3e50;
+            opacity: 0.9;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .email-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+
+        .email-generator {
+            text-align: center;
+        }
+
+        .email-generator h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .email-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .email-box {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px 25px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #495057;
+            min-width: 300px;
+            word-break: break-all;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary-color), #5dade2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--secondary-color), #58d68d);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger-color), #ec7063);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .inbox-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .inbox-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .inbox-header h2 {
+            color: #2c3e50;
+            font-size: 1.5rem;
+        }
+
+        .email-count {
+            background: linear-gradient(135deg, var(--primary-color), #5dade2);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .email-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .email-item {
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            background: #f8f9fa;
+        }
+
+        .email-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            background: white;
+        }
+
+        .email-item.unread {
+            border-left: 4px solid var(--primary-color);
+            background: white;
+        }
+
+        .email-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .email-from {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .email-time {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .email-subject {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+
+        .email-preview {
+            color: #6c757d;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #c3e6cb;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            width: 90%;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 15px;
+        }
+
+        .close {
+            font-size: 24px;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .footer p {
+            margin: 5px 0;
+        }
+
+        .footer a {
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer a:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 50px;
+            }
+            
+            .navbar {
+                height: 50px;
+                padding: 10px 15px;
+            }
+
+            .nav-buttons {
+                gap: 10px;
+            }
+            
+            .donate-button {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+
+            .upi-popup {
+                width: 95% !important;
+                padding: 15px !important;
+                max-width: none !important;
+            }
+
+            .main-content {
+                margin-top: 10px;
+                padding: 15px;
+            }
+
+            .banner h1 {
+                font-size: 1.8rem;
+            }
+            
+            .email-section, .inbox-section {
+                padding: 20px;
+            }
+            
+            .email-box {
+                min-width: auto;
+                width: 100%;
+                text-align: center;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 10px !important;
+            }
+            
+            .donate-button {
+                padding: 6px 10px !important;
+                font-size: 12px !important;
+            }
+            
+            .home-button span {
+                display: none;
+            }
+            
+            .home-icon {
+                margin-right: 0;
+            }
+
+            .banner {
+                padding: 15px;
+            }
+
+            .banner h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="index.html" class="home-button">
+            <svg class="home-icon" viewBox="0 0 24 24">
+                <path d="M9.005 16.545a2.997 2.997 0 012.997-2.997h0A2.997 2.997 0 0115 16.545V22h7V11.543L12 2 2 11.543V22h7.005z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"/>
+            </svg>
+            <span>Home</span>
+        </a>
+        <div class="nav-buttons">
+            <button class="donate-button" onclick="showUPIPopup()">
+                <svg class="donate-icon" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                </svg>
+                Donate
+            </button>
+        </div>
+    </nav>
+
+    <!-- UPI popup elements -->
+    <div class="overlay" id="overlay" onclick="hideUPIPopup()"></div>
+    <div class="upi-popup" id="upiPopup">
+        <button class="close-popup" onclick="hideUPIPopup()">×</button>
+        <h3>Support My Work with UPI</h3>
+        <div class="upi-option" onclick="copyUPI('niteeshkumarbanks-1@okicici')">
+            <div class="upi-details">
+                <img src="images/gpay_icon.png" alt="Google Pay" class="upi-icon">
+                <div>
+                    <p>Google Pay</p>
+                    <p class="upi-id">niteeshkumarbanks-1@okicici</p>
+                </div>
+            </div>
+            <img src="images/google_pay_qr.jpg" alt="Google Pay QR Code" class="qr-code">
+        </div>
+    </div>
+
+    <div class="copy-notification" id="copyNotification">UPI ID copied to clipboard!</div>
+
+    <!-- Banner -->
+    <div class="banner">
+        <h1>Temporary Email Generator</h1>
+        <p>Temporary email addresses for secure communication</p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <div class="email-section">
+                <div class="email-generator">
+                    <h2>Your Temporary Email</h2>
+                    <div class="email-display">
+                        <div class="email-box" id="emailDisplay">
+                            Click "Generate Email" to create a temporary address
+                        </div>
+                    </div>
+                    <div class="controls">
+                        <button class="btn" id="generateBtn" onclick="generateEmail()">
+                            📧 Generate Email
+                        </button>
+                        <button class="btn btn-secondary" id="copyBtn" onclick="copyEmail()" disabled>
+                            📋 Copy Email
+                        </button>
+                        <button class="btn" id="refreshBtn" onclick="checkEmails()" disabled>
+                            🔄 Refresh Inbox
+                        </button>
+                        <button class="btn btn-danger" id="deleteBtn" onclick="deleteEmail()" disabled>
+                            🗑️ Delete Email
+                        </button>
+                    </div>
+                    <div id="message"></div>
+                </div>
+            </div>
+
+            <div class="inbox-section">
+                <div class="inbox-header">
+                    <h2>📬 Inbox</h2>
+                    <span class="email-count" id="emailCount">0 emails</span>
+                </div>
+                <div id="emailList" class="email-list">
+                    <div class="loading">
+                        <p>Generate an email address to start receiving messages</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Modal -->
+    <div id="emailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalSubject"></h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>© 2025 Temporary Email Generator by Niteesh Kumar</p>
+        <p><a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a> | <a href="#">Contact</a></p>
+    </div>
+
+    <script>
+        // Configuration - Your actual Google Apps Script URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx99sInyTLWuksySemkkkoq148tOFt263G08DTZSKFEtBHm_tpSGhjubLqi3xDRRn02/exec';
+        const DOMAIN = 'niteeshkumar.online'; // Your actual domain
+        
+        let currentEmail = '';
+        let countdownInterval; 
+        let emails = [];
+        let refreshInterval;
+
+        function getWordLists() {
+            const adjectives = [
+                'quick', 'lazy', 'sleepy', 'happy', 'blue', 'green', 'fast', 'silent', 'dark', 'bright',
+                'clever', 'brave', 'calm', 'eager', 'gentle', 'jolly', 'kind', 'proud', 'silly', 'witty',
+                'tiny', 'huge', 'red', 'purple', 'fresh', 'tasty', 'sharp', 'round', 'cold', 'hot',
+                'smooth', 'rough', 'soft', 'warm', 'cool', 'sweet', 'sour', 'loud', 'quiet', 'old',
+                'new', 'clean', 'dirty', 'heavy', 'light', 'thick', 'thin', 'wide', 'narrow', 'tall',
+                'short', 'long', 'deep', 'shallow', 'strong', 'weak', 'rich', 'poor', 'empty', 'full'
+            ];
+            
+            const nouns = [
+                'fox', 'dog', 'cat', 'sun', 'moon', 'river', 'tree', 'sky', 'sea', 'star',
+                'bird', 'wolf', 'bear', 'fish', 'lion', 'tiger', 'rose', 'wind', 'leaf', 'snow',
+                'boat', 'ship', 'car', 'hat', 'key', 'pen', 'box', 'cup', 'desk', 'chair',
+                'book', 'phone', 'house', 'door', 'window', 'garden', 'beach', 'mountain', 'cloud', 'stone',
+                'flame', 'wave', 'storm', 'light', 'shadow', 'dream', 'song', 'dance', 'smile', 'heart',
+                'soul', 'mind', 'spirit', 'magic', 'peace', 'joy', 'hope', 'faith', 'love', 'life'
+            ];
+            
+            return { adjectives, nouns };
+        }
+
+        // Generate a human-like email address using adjective + noun + number pattern
+        function generateHumanLikeEmail() {
+            try {
+                const { adjectives, nouns } = getWordLists();
+
+                // Pick random parts
+                const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+                const noun = nouns[Math.floor(Math.random() * nouns.length)];
+                const num = Math.floor(10 + Math.random() * 990); // Random number between 10 and 999
+
+                // Different patterns for variety
+                const patterns = [
+                    `${adj}.${noun}${num}`,           // quick.fox123
+                    `${adj}${noun}${num}`,            // quickfox123  
+                    `${adj}_${noun}${num}`,           // quick_fox123
+                    `${adj}-${noun}${num}`,           // quick-fox123
+                    `${adj}${noun}`,                  // quickfox
+                    `${adj}.${noun}`,                 // quick.fox
+                    `${adj}_${noun}`,                 // quick_fox
+                    `${noun}${adj}${num}`,            // foxquick123
+                    `${noun}.${adj}${num}`,           // fox.quick123
+                    `${adj}${num}${noun}`             // quick123fox
+                ];
+
+                const selectedPattern = patterns[Math.floor(Math.random() * patterns.length)];
+                const username = selectedPattern.toLowerCase();
+                
+                return `${username}@${DOMAIN}`;
+            } catch (error) {
+                console.error('Error generating human-like email:', error);
+                // Fallback to simple random string if word lists fail
+                const randomString = Math.random().toString(36).substring(2, 12);
+                return `${randomString}@${DOMAIN}`;
+            }
+        }
+
+        // Generate email function - now uses human-like generation
+        function generateEmail() {
+            currentEmail = generateHumanLikeEmail();
+            
+            document.getElementById('emailDisplay').textContent = currentEmail;
+            document.getElementById('copyBtn').disabled = false;
+            document.getElementById('refreshBtn').disabled = false;
+            document.getElementById('deleteBtn').disabled = false;
+            
+            showMessage('Email generated successfully! 🎉', 'success');
+            
+            // Clear previous emails
+            emails = [];
+            updateEmailList();
+            
+            // Register email with backend
+            registerEmail();
+        }
+
+        // Register email with backend
+        async function registerEmail() {
+            if (!currentEmail) return;
+            
+            try {
+                showMessage('Registering email address...', 'success');
+                
+                const response = await fetch(`${SCRIPT_URL}?action=register&email=${encodeURIComponent(currentEmail)}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('Email registered successfully:', data);
+                    showMessage('Email registered! You can now receive messages. 📧', 'success');
+                    
+                    // Start checking for emails immediately
+                    setTimeout(() => {
+                        checkEmails();
+                        startAutoRefresh();
+                    }, 2000);
+                } else {
+                    console.error('Failed to register email:', data.message);
+                    showMessage('Registration failed: ' + data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error registering email:', error);
+                showMessage('Registration failed. Server may be unavailable.', 'error');
+            }
+        }
+
+        // Copy email to clipboard
+        async function copyEmail() {
+            if (!currentEmail) return;
+            
+            try {
+                await navigator.clipboard.writeText(currentEmail);
+                showMessage('Email copied to clipboard! 📋', 'success');
+            } catch (err) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = currentEmail;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showMessage('Email copied to clipboard! 📋', 'success');
+            }
+        }
+
+        function startRefreshCountdown() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            let countdown = 10;
+            
+            refreshBtn.disabled = true;
+            clearInterval(countdownInterval); // Clear any old timers
+
+            // Set the initial countdown text right away
+            refreshBtn.textContent = `🔄 Refresh in ${countdown}s`;
+
+            countdownInterval = setInterval(() => {
+                countdown--;
+                if (countdown <= 0) {
+                    // When countdown is finished, clear the timer and reset the button
+                    clearInterval(countdownInterval);
+                    refreshBtn.textContent = '🔄 Refresh Inbox';
+                    refreshBtn.disabled = false;
+                } else {
+                    // Otherwise, just update the countdown text
+                    refreshBtn.textContent = `🔄 Refresh in ${countdown}s`;
+                }
+            }, 1000);
+        }
+
+        // Check for new emails
+        async function checkEmails() {
+            if (!currentEmail) return;
+
+            const refreshBtn = document.getElementById('refreshBtn');
+            
+            if (refreshBtn.disabled) return;
+            
+            startRefreshCountdown();
+
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=getEmails&email=${encodeURIComponent(currentEmail)}&v=${new Date().getTime()}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    emails = data.data || []; 
+                } else {
+                    console.error('Failed to fetch emails:', data.message);
+                }
+            } catch (error) {
+                console.error('Error fetching emails:', error);
+            }
+
+            updateEmailList();
+        }
+
+        // Update the email list display
+        function updateEmailList() {
+            const emailList = document.getElementById('emailList');
+            const emailCount = document.getElementById('emailCount');
+            
+            emailCount.textContent = `${emails.length} email${emails.length !== 1 ? 's' : ''}`;
+            
+            if (emails.length === 0) {
+                emailList.innerHTML = `
+                    <div class="loading">
+                        <p>No emails yet. Send an email to <strong>${currentEmail || 'your temporary address'}</strong> to test!</p>
+                        <p style="margin-top: 10px; font-size: 0.9rem; color: #6c757d;">
+                            💡 Tip: Use this realistic-looking address for signups, downloads, or any service that requires email verification.
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+            
+            emailList.innerHTML = emails.map(email => `
+                <div class="email-item ${!email.read ? 'unread' : ''}" onclick="openEmail('${email.id}')" style="position: relative;">
+                    <div class="email-meta">
+                        <span class="email-from">${escapeHtml(email.from)}</span>
+                        <span class="email-time">${formatTime(email.timestamp)}</span>
+                    </div>
+                    <div class="email-subject">${escapeHtml(email.subject)}</div>
+                    <div class="email-preview">${escapeHtml(truncateText(email.body, 100))}</div>
+                    <div class="email-loading" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.9); padding: 10px; border-radius: 5px;">
+                        <div class="spinner" style="width: 20px; height: 20px; margin: 0 auto 5px;"></div>
+                        <small>Opening...</small>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Track modal state to prevent multiple opens
+        let isModalOpening = false;
+        let isModalOpen = false;
+
+        // Open email in modal
+        async function openEmail(emailId) {
+            if (isModalOpening || isModalOpen) {
+                console.log('Modal already opening or open, ignoring click');
+                return;
+            }
+
+            const email = emails.find(e => e.id === emailId);
+            if (!email) return;
+            
+            isModalOpening = true;
+            
+            document.getElementById('modalSubject').textContent = 'Loading...';
+            document.getElementById('modalContent').innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div class="spinner"></div>
+                    <p>Loading email content...</p>
+                </div>
+            `;
+            
+            document.getElementById('emailModal').style.display = 'block';
+            isModalOpen = true;
+            
+            try {
+                email.read = true;
+                updateEmailList();
+                
+                // Mark as read on server (in background)
+                fetch(`${SCRIPT_URL}?action=markAsRead&emailId=${encodeURIComponent(emailId)}&email=${encodeURIComponent(currentEmail)}`)
+                    .catch(error => console.error('Failed to mark email as read on server:', error));
+                
+                await new Promise(resolve => setTimeout(resolve, 200));
+                
+                // Update modal content
+                document.getElementById('modalSubject').textContent = email.subject;
+                document.getElementById('modalContent').innerHTML = `
+                    <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #e9ecef;">
+                        <strong>From:</strong> ${escapeHtml(email.from)}<br>
+                        <strong>To:</strong> ${escapeHtml(currentEmail)}<br>
+                        <strong>Date:</strong> ${formatFullTime(email.timestamp)}
+                    </div>
+                    <div style="line-height: 1.6; white-space: pre-wrap;">${escapeHtml(email.body)}</div>
+                `;
+                
+            } catch (error) {
+                console.error('Error opening email:', error);
+                document.getElementById('modalContent').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #dc3545;">
+                        <p>❌ Error loading email content</p>
+                        <p style="font-size: 0.9rem; color: #6c757d;">Please try again</p>
+                    </div>
+                `;
+            } finally {
+                isModalOpening = false;
+            }
+        }
+
+        // Close email modal
+        function closeModal() {
+            const modal = document.getElementById('emailModal');
+            if (!modal || modal.style.display === 'none') {
+                return;
+            }
+
+            modal.style.display = 'none';
+            isModalOpen = false;
+            isModalOpening = false;
+
+            console.log('Modal closed');
+        }
+
+        // Delete current email
+        async function deleteEmail() {
+            if (!currentEmail) return;
+            
+            if (confirm('Are you sure you want to delete this temporary email? This action cannot be undone.')) {
+                try {
+                    const response = await fetch(`${SCRIPT_URL}?action=deleteEmail&email=${encodeURIComponent(currentEmail)}`);
+                    const data = await response.json();
+                    
+                    if (!data.success) {
+                        console.error('Server deletion failed:', data.message);
+                    }
+                } catch (error) {
+                    console.error('Error deleting from server:', error);
+                }
+                
+                currentEmail = '';
+                emails = [];
+                
+                document.getElementById('emailDisplay').textContent = 'Click "Generate Email" to create a temporary address';
+                document.getElementById('copyBtn').disabled = true;
+                document.getElementById('refreshBtn').disabled = true;
+                document.getElementById('deleteBtn').disabled = true;
+                
+                updateEmailList();
+                stopAutoRefresh();
+                
+                showMessage('Email deleted successfully! 🗑️', 'success');
+            }
+        }
+
+        // Start auto-refresh
+        function startAutoRefresh() {
+            stopAutoRefresh();
+            refreshInterval = setInterval(() => {
+                if (currentEmail) {
+                    checkEmails();
+                }
+            }, 12000); 
+        }
+
+        // Stop auto-refresh
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+        }
+
+        // Utility functions
+        function showMessage(text, type = 'success') {
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = `<div class="${type}">${text}</div>`;
+            setTimeout(() => {
+                messageDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            
+            return date.toLocaleDateString();
+        }
+
+        function formatFullTime(timestamp) {
+            return new Date(timestamp).toLocaleString();
+        }
+
+        function truncateText(text, maxLength) {
+            if (!text) return '';
+            if (text.length <= maxLength) return text;
+            return text.substring(0, maxLength) + '...';
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // UPI popup functions
+        function showUPIPopup() {
+            document.getElementById('upiPopup').classList.add('show');
+            document.getElementById('overlay').classList.add('show');
+        }
+
+        function hideUPIPopup() {
+            document.getElementById('upiPopup').classList.remove('show');
+            document.getElementById('overlay').classList.remove('show');
+        }
+
+        function copyUPI(upiId) {
+            navigator.clipboard.writeText(upiId).then(() => {
+                const notification = document.getElementById('copyNotification');
+                notification.style.display = 'block';
+                
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+                
+            }).catch(err => {
+                console.error('Failed to copy UPI ID:', err);
+                alert('Failed to copy UPI ID. Please copy it manually.');
+            });
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('emailModal');
+            if (event.target === modal && !isModalOpening) {
+                closeModal();
+            }
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && isModalOpen && !isModalOpening) {
+                closeModal();
+            }
+        });
+
+        window.addEventListener('beforeunload', stopAutoRefresh);
+        
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('TempMail Pro with Human-like Emails initialized');
+            console.log('Domain:', DOMAIN);
+            console.log('Script URL:', SCRIPT_URL);
+            console.log('Available word combinations:', (function() {
+                const { adjectives, nouns } = getWordLists();
+                return adjectives.length * nouns.length * 10 * 990;
+            })());
+            
+            updateEmailList();
+        });
+
+        // Debug function for testing
+        function debugInfo() {
+            console.log('=== DEBUG INFO ===');
+            console.log('Current Email:', currentEmail);
+            console.log('Emails Count:', emails.length);
+            console.log('Domain:', DOMAIN);
+            console.log('Script URL:', SCRIPT_URL);
+            console.log('Auto-refresh active:', !!refreshInterval);
+            console.log('Available combinations:', (function() {
+                const { adjectives, nouns } = getWordLists();
+                return adjectives.length * nouns.length * 10 * 990;
+            })());
+        }
+
+        // Function to generate multiple examples (for testing)
+        function generateExamples() {
+            console.log('=== EMAIL EXAMPLES ===');
+            for (let i = 0; i < 15; i++) {
+                console.log(generateHumanLikeEmail());
+            }
+        }
+
+        // Function to show word list stats
+        function getWordStats() {
+            const { adjectives, nouns } = getWordLists();
+            console.log('=== WORD STATISTICS ===');
+            console.log('Adjectives:', adjectives.length);
+            console.log('Nouns:', nouns.length);
+            console.log('Pattern variations:', 10);
+            console.log('Total possible combinations:', adjectives.length * nouns.length * 10 * 990);
+            console.log('Unique combinations with numbers:', adjectives.length * nouns.length * 990);
+        }
+
+        // Make debug functions available globally
+        window.debugInfo = debugInfo;
+        window.generateExamples = generateExamples;
+        window.getWordStats = getWordStats;
+        
+        console.log('TempMail Pro with Word-Based Email Generation loaded.');
+        console.log('Available functions: debugInfo(), generateExamples(), getWordStats()');
+    </script>
+</body>
+</html>

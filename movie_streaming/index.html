@@ -3,42 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
-    <!-- Mobile viewport with safe area support -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-    
-    <!-- App Theme Colors -->
-    <meta name="theme-color" content="#141414">
-    <meta name="msapplication-navbutton-color" content="#141414">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
-    <!-- PWA / Mobile App Meta Tags -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Shaaka">
-    <meta name="application-name" content="Shaaka">
-    
-    <!-- Prevent phone number detection -->
-    <meta name="format-detection" content="telephone=no">
-    
-    <!-- App Description for SEO -->
-    <meta name="description" content="Shaaka - Watch movies, TV shows, and live channels for free">
-    
-    <title>Shaaka</title>
-    
-    <!-- Capacitor Core (Native Bridge) -->
-    <script type="module">
-        import { Capacitor } from 'https://cdn.jsdelivr.net/npm/@aspect-build/aspect-capacitor@0.1.0/dist/esm/capacitor.min.js';
-        window.Capacitor = Capacitor;
-    </script>
-    
-    <!-- Force Update Check -->
-    <script src="force-update.js"></script>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieStreaming-Niteesh Kumar</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- Mobile-specific styles -->
-    <link rel="stylesheet" href="mobile.css">
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -399,27 +367,12 @@
 
     <!-- Adsterra Popunder -->
     <!-- Popunder script moved to ads.js for rate limiting -->
-    
-    <!-- Capacitor Native Bridge Script -->
-    <script>
-        // Detect if running in Capacitor
-        window.isCapacitorApp = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
-        
-        if (window.isCapacitorApp) {
-            document.body.classList.add('capacitor-app');
-            // Check for TV mode (large screen + no touch)
-            if (window.innerWidth >= 1280 && !('ontouchstart' in window)) {
-                document.body.classList.add('tv-mode');
-            }
-        }
-    </script>
 </body>
-<script src="ad-blocker.js"></script>
-<script src="streaming.js"></script>
+<script src="../streaming.js"></script>
 <script src="ads.js"></script>
-<!-- Footer Banner Ad Zone - DISABLED -->
-<!-- <div id="ad-banner-bottom" class="ad-container w-full flex justify-center fixed bottom-0 z-50 pointer-events-none">
+<!-- Footer Banner Ad Zone -->
+<div id="ad-banner-bottom" class="ad-container w-full flex justify-center fixed bottom-0 z-50 pointer-events-none">
     <div class="pointer-events-auto"></div>
-</div> -->
+</div>
 
 </html>

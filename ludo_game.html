@@ -1,0 +1,2317 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ludo Game - Niteesh Kumar</title>
+  <style>
+    /* Base Styles */
+    :root {
+      --red-color: #E74C3C;
+      --green-color: #2ECC71;
+      --blue-color: #3498DB;
+      --yellow-color: #F1C40F;
+      --dark-red: #C0392B;
+      --dark-green: #27AE60;
+      --dark-blue: #2980B9;
+      --dark-yellow: #F39C12;
+      --shadow: 0 4px 8px rgba(0,0,0,0.1);
+      --transition: all 0.3s ease;
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      background-color: #f5f7fa;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      color: #333;
+      padding-top: 35px;
+    }
+
+    /* Header Styles */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 30px;
+      border-bottom: 1px solid #e6e6e6;
+      background-color: #ffffff;
+      flex-wrap: wrap;
+      z-index: 10;
+      box-shadow: var(--shadow);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      margin-right: 25px;
+      text-decoration: none;
+      color: #333;
+      transition: var(--transition);
+    }
+
+    .logo:hover {
+      opacity: 0.8;
+      transform: translateY(-2px);
+    }
+
+    .custom-logo {
+      width: 36px;
+      height: 36px;
+      margin-right: 12px;
+      border-radius: 50%;
+    }
+
+    .logo-text {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .nav-links a {
+      margin: 0 15px;
+      text-decoration: none;
+      color: #4f4f4f;
+      font-weight: 500;
+      transition: var(--transition);
+      padding: 5px 0;
+      position: relative;
+    }
+
+    .nav-links a:hover {
+      color: var(--blue-color);
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background-color: var(--blue-color);
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+    }
+
+    .header-search {
+      position: relative;
+    }
+
+    .header-search input {
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 25px;
+      width: 220px;
+      font-size: 0.9rem;
+      transition: var(--transition);
+      background-color: #f5f5f5;
+    }
+
+    .header-search input:focus {
+      outline: none;
+      border-color: var(--blue-color);
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+      background-color: white;
+    }
+
+    /* Banner Styles */
+    .banner {
+      background: linear-gradient(135deg, #b8e1fc 0%, #a8c8ff 100%);
+      padding: 25px 30px;
+      box-shadow: inset 0 -5px 5px -5px rgba(0,0,0,0.1);
+      text-align: left;
+      z-index: 5;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .banner::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+      border-radius: 50%;
+    }
+
+    .banner h1 {
+      margin: 0;
+      font-size: 2.2rem;
+      color: #2c3e50;
+      font-weight: 600;
+      position: relative;
+      text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
+    }
+
+    /* Game Container */
+    .main-content {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .game-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      margin-top: 20px;
+      gap: 30px;
+      flex-wrap: wrap;
+      width: 100%;
+      max-width: 1200px;
+    }
+    
+    .board-container {
+      width: 600px;
+      height: 600px;
+      position: relative;
+      border: 4px solid #2c3e50;
+      border-radius: 10px;
+      flex-shrink: 0;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      background-color: white;
+      overflow: hidden;
+    }
+    
+    .board {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(15, 1fr);
+      grid-template-rows: repeat(15, 1fr);
+    }
+    
+    .cell {
+      border: 1px solid rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+    
+    /* Home bases */
+    .base {
+      position: relative;
+      border: 3px solid #2c3e50;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    .red-base {
+      background-color: var(--red-color);
+      grid-column: 1 / span 6;
+      grid-row: 1 / span 6;
+    }
+    
+    .green-base {
+      background-color: var(--green-color);
+      grid-column: 10 / span 6;
+      grid-row: 1 / span 6;
+    }
+    
+    .blue-base {
+      background-color: var(--blue-color);
+      grid-column: 1 / span 6;
+      grid-row: 10 / span 6;
+    }
+    
+    .yellow-base {
+      background-color: var(--yellow-color);
+      grid-column: 10 / span 6;
+      grid-row: 10 / span 6;
+    }
+    
+    /* Home squares */
+    .home-square {
+      position: absolute;
+      width: 70%;
+      height: 70%;
+      background-color: rgba(255,255,255,0.9);
+      border: 3px solid #2c3e50;
+      border-radius: 10px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      padding: 8px;
+      gap: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .home-square .token {
+      width: 80%;
+      height: 80%;
+      position: relative;
+      transform: none;
+    }
+    
+    /* Tokens */
+    .token {
+      border-radius: 50%;
+      width: 80%;  
+      height: 80%; 
+      margin: auto;
+      border: 2px solid rgba(0,0,0,0.3);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+      z-index: 100;
+    }
+    
+    .token:hover {
+      transform: scale(1.1);
+      box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+    }
+
+    .token.active {
+      animation: pulse 1.5s infinite;
+    }
+
+    .token.winner {
+      animation: celebrate 2s infinite;
+    }
+    
+    .red-token {
+      background-color: var(--red-color);
+      border-color: var(--dark-red);
+    }
+    
+    .green-token {
+      background-color: var(--green-color);
+      border-color: var(--dark-green);
+    }
+    
+    .blue-token {
+      background-color: var(--blue-color);
+      border-color: var(--dark-blue);
+    }
+    
+    .yellow-token {
+      background-color: var(--yellow-color);
+      border-color: var(--dark-yellow);
+    }
+    
+    /* Paths */
+    .path {
+      background-color: #f8f9fa;
+    }
+
+    .red-path {
+      background-color: #f8f9fa;
+      border-color: rgba(231, 76, 60, 0.3);
+    }
+    
+    .green-path {
+      background-color: #f8f9fa;
+      border-color: rgba(46, 204, 113, 0.3);
+    }
+    
+    .blue-path {
+      background-color: #f8f9fa;
+      border-color: rgba(52, 152, 219, 0.3);
+    }
+    
+    .yellow-path {
+      background-color: #f8f9fa;
+      border-color: rgba(241, 196, 15, 0.3);
+    }
+
+    /* Home paths (grid) */
+    .home-path {
+      border: 1px solid rgba(0,0,0,0.2);
+    }
+    
+    .red-home-path {
+      background-color: var(--red-color);
+    }
+    
+    .green-home-path {
+      background-color: var(--yellow-color);
+    }
+    
+    .blue-home-path {
+      background-color: var(--blue-color);
+    }
+    
+    .yellow-home-path {
+      background-color: var(--green-color);
+    }
+    
+    /* Center area with image */
+    .center-container {
+      grid-column: 7 / span 3;
+      grid-row: 7 / span 3;
+      position: relative;
+      border: 3px solid #2c3e50;
+      border-radius: 5px;
+      overflow: hidden;
+      background-color: #ecf0f1;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .center-image {
+      width: 90%;
+      height: 90%;
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 0 5px rgba(0,0,0,0.3));
+    }
+    
+    /* Arrows */
+    .arrow {
+      font-size: 24px;
+      font-weight: bold;
+      color: #000;
+      text-shadow: 0 0 3px rgba(255,255,255,0.8);
+      z-index: 1000;
+      position: relative;
+      visibility: visible !important;
+    }
+    
+    /* Stars */
+    .star {
+      font-size: 24px;
+      font-weight: bold;
+      text-shadow: 0 0 3px rgba(0,0,0,0.2);
+    }
+    
+    .red-star {
+      color: var(--dark-red);
+    }
+    
+    .green-star {
+      color: var(--dark-green);
+    }
+    
+    .blue-star {
+      color: var(--dark-yellow);
+    }
+    
+    .yellow-star {
+      color: var(--dark-blue);
+    }
+
+    /* Safe cells */
+    .safe-cell {
+      background-color: rgba(255, 255, 255, 0.7);
+      border: 2px dashed rgba(0,0,0,0.3);
+    }
+
+    /* Game Controls */
+    .game-controls {
+      width: 280px;
+      background-color: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: var(--shadow);
+      flex-shrink: 0;
+      margin-top: 20px;
+    }
+
+    .controls-header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .controls-header h2 {
+      margin: 0;
+      color: #2c3e50;
+      font-size: 1.4rem;
+    }
+
+    .player-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 8px;
+      background-color: #f8f9fa;
+    }
+
+    .player-turn {
+      background-color: #e3f2fd;
+      border-left: 4px solid var(--blue-color);
+    }
+
+    .player-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      margin-right: 10px;
+      border: 1px solid rgba(0,0,0,0.2);
+    }
+
+    .player-name {
+      font-weight: 500;
+    }
+
+    .dice-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 20px 0;
+    }
+
+    .dice {
+      width: 80px;
+      height: 80px;
+      background-color: white;
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #2c3e50;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      margin-bottom: 15px;
+      border: 2px solid #eee;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 30px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      width: 100%;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .btn-primary {
+      background-color: var(--blue-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--dark-blue);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+    }
+
+    .btn-secondary {
+      background-color: #f8f9fa;
+      color: #2c3e50;
+      border: 1px solid #ddd;
+    }
+
+    .btn-secondary:hover {
+      background-color: #e9ecef;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .btn-icon {
+      margin-right: 8px;
+    }
+
+    .game-message {
+      text-align: center;
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+
+    .winner-message {
+      background-color: rgba(46, 204, 113, 0.2);
+      color: var(--dark-green);
+      animation: pulse 2s infinite;
+    }
+
+    /* Animations */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes celebrate {
+      0% { transform: scale(1) rotate(0deg); box-shadow: 0 0 0 rgba(255,215,0,0.5); }
+      25% { transform: scale(1.2) rotate(10deg); box-shadow: 0 0 20px rgba(255,215,0,0.8); }
+      50% { transform: scale(1.1) rotate(-10deg); }
+      75% { transform: scale(1.2) rotate(10deg); box-shadow: 0 0 20px rgba(255,215,0,0.8); }
+      100% { transform: scale(1) rotate(0deg); box-shadow: 0 0 0 rgba(255,215,0,0.5); }
+    }
+
+    @keyframes diceRoll {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(90deg); }
+      50% { transform: rotate(180deg); }
+      75% { transform: rotate(270deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .rolling {
+      animation: diceRoll 0.5s linear;
+    }
+
+    /* Responsive styles */
+    @media (max-width: 1024px) {
+      .game-container {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .board-container {
+        width: 500px;
+        height: 500px;
+      }
+      
+      .game-controls {
+        width: 500px;
+        margin-top: 30px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 15px;
+      }
+
+      .header-left, .header-right {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .header-search input {
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .nav-links {
+        margin-top: 10px;
+      }
+
+      .banner h1 {
+        font-size: 1.8rem;
+      }
+      
+      .board-container {
+        width: 410px;  /* Increased from 400px */
+        height: 410px; /* Increased from 400px */
+      }
+      
+      .game-controls {
+        width: 410px;  /* Match the board width */
+      }
+      
+      .controls-header {
+        display: none;  /* Hide the controls header completely */
+      }
+      
+      .player-info {
+        display: none;  /* Hide the original player info boxes */
+      }
+      
+      .dice-container {
+        position: relative;
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+      }
+      
+      .dice-indicator-wrapper {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        width: 100%;
+      }
+      
+      .cell {
+        width: 27.33px;  /* 410px (board width) / 15 columns */
+        height: 27.33px; /* 410px (board height) / 15 rows */
+        min-width: 27.33px;  /* Ensure minimum width */
+        min-height: 27.33px; /* Ensure minimum height */
+        box-sizing: border-box;
+      }
+
+      /* Fix for specific cells that were having size issues */
+      .cell[style*="grid-column: 15"] {
+        width: 27.33px !important;
+        min-width: 27.33px !important;
+      }
+
+      .cell[style*="grid-row: 15"] {
+        height: 27.33px !important;
+        min-height: 27.33px !important;
+      }
+      
+      #start-game {
+        display: none;  /* Hide the Start New Game button */
+      }
+      
+      span.cell-number {
+        display: none !important;  /* Force hide cell numbers */
+      }
+      
+      .star {
+        font-size: 20px;  /* Adjust star size for mobile */
+      }
+      
+      .arrow {
+        font-size: 20px;  /* Adjust arrow size for mobile */
+      }
+      
+      .token.in-play {
+        width: 20px;  /* Reduced from 25px */
+        height: 20px; /* Reduced from 25px */
+      }
+      
+      /* Also adjust the home base tokens */
+      .home-square .token {
+        width: 70%;  /* Slightly smaller than desktop */
+        height: 70%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .nav-links a {
+        margin: 0 10px 0 0;
+        font-size: 0.9rem;
+      }
+
+      .banner {
+        padding: 15px;
+      }
+
+      .banner h1 {
+        font-size: 1.5rem;
+      }
+      
+      .board-container {
+        width: 330px;  /* Increased from 320px */
+        height: 330px; /* Increased from 320px */
+      }
+      
+      .game-controls {
+        width: 330px;  /* Match the board width */
+      }
+      
+      .dice {
+        width: 60px;
+        height: 60px;
+        font-size: 2rem;
+      }
+      
+      .btn {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+      }
+      
+      .cell {
+        width: 22px;  /* 330px (board width) / 15 columns */
+        height: 22px; /* 330px (board height) / 15 rows */
+        min-width: 22px;  /* Ensure minimum width */
+        min-height: 22px; /* Ensure minimum height */
+        box-sizing: border-box;
+      }
+
+      /* Fix for specific cells that were having size issues */
+      .cell[style*="grid-column: 15"] {
+        width: 22px !important;
+        min-width: 22px !important;
+      }
+
+      .cell[style*="grid-row: 15"] {
+        height: 22px !important;
+        min-height: 22px !important;
+      }
+      
+      span.cell-number {
+        display: none !important;  /* Ensure numbers stay hidden on smaller screens */
+      }
+      
+      .star {
+        font-size: 16px;  /* Further adjust star size for smaller screens */
+      }
+      
+      .arrow {
+        font-size: 16px;  /* Further adjust arrow size for smaller screens */
+      }
+      
+      .token.in-play {
+        width: 18px;  /* Even smaller for very small screens */
+        height: 18px;
+      }
+      
+      /* Adjust home base tokens for smaller screens */
+      .home-square .token {
+        width: 65%;
+        height: 65%;
+      }
+    }
+
+    /* Footer */
+    .footer {
+      background-color: #2c3e50;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .footer p {
+      margin: 5px 0;
+    }
+
+    .footer a {
+      color: #ecf0f1;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .footer a:hover {
+      color: var(--blue-color);
+      text-decoration: underline;
+    }
+
+    /* Add this new style for tokens that are in play */
+    .token.in-play {
+      position: absolute;
+      width: 25px;
+      height: 25px;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    /* Token movement animations */
+    .token.moving {
+      animation: moveScale 0.3s ease-in-out;
+    }
+
+    .token.captured {
+      animation: captureEffect 0.5s ease-out;
+    }
+
+    .token.valid-move {
+      box-shadow: 0 0 15px rgba(46, 204, 113, 0.6);
+      animation: validMove 1.5s infinite;
+    }
+
+    .token.invalid-move {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    @keyframes moveScale {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes captureEffect {
+      0% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.3) rotate(180deg); opacity: 0.5; }
+      100% { transform: scale(0) rotate(360deg); opacity: 0; }
+    }
+
+    @keyframes validMove {
+      0% { box-shadow: 0 0 15px rgba(46, 204, 113, 0.6); }
+      50% { box-shadow: 0 0 25px rgba(46, 204, 113, 0.8); }
+      100% { box-shadow: 0 0 15px rgba(46, 204, 113, 0.6); }
+    }
+
+    /* Add this to your CSS styles section */
+    .cell-number {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      font-size: 10px;
+      color: #666;
+      z-index: 1;
+    }
+
+    /* Navbar and Related Styles */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #0095f6;  /* Changed from #000 to #0095f6 */
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);  /* Updated for better contrast */
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      z-index: 1000;
+      height: 60px;
+      box-sizing: border-box;
+      justify-content: space-between;
+    }
+
+    .home-button {
+      color: #fff;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .home-icon {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .donate-button {
+      color: #fff;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      background: transparent;  /* Changed from #0095f6 to transparent */
+      padding: 8px 16px;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+      border: 1px solid rgba(255, 255, 255, 0.8);  /* Added white border */
+      cursor: pointer;
+    }
+
+    .donate-button:hover {
+      background: rgba(255, 255, 255, 0.1);  /* Changed hover effect */
+    }
+
+    .donate-icon {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    /* UPI Popup Styles */
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+    }
+
+    .overlay.show {
+      display: block;
+    }
+
+    .upi-popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #262626;
+      padding: 25px;
+      border-radius: 12px;
+      z-index: 1001;
+      width: 90%;
+      max-width: 420px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translate(-50%, -45%); }
+      to { opacity: 1; transform: translate(-50%, -50%); }
+    }
+
+    .upi-popup.show {
+      display: block;
+    }
+
+    .upi-popup h3 {
+      color: #fff;
+      margin-bottom: 20px;
+      font-size: 18px;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .upi-option {
+      background: #333;
+      padding: 15px;
+      margin: 12px 0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid transparent;
+    }
+
+    .upi-option:hover {
+      background: #3a3a3a;
+      border-color: #0095f6;
+      transform: translateY(-2px);
+    }
+
+    .upi-details {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .upi-option p {
+      margin: 0;
+      font-size: 14px;
+      color: #fff;
+    }
+
+    .upi-option .upi-id {
+      color: #0095f6;
+      font-weight: 500;
+      font-size: 13px;
+      margin-top: 3px;
+      word-break: break-all;
+    }
+
+    .close-popup {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: none;
+      border: none;
+      color: #8e8e8e;
+      cursor: pointer;
+      font-size: 22px;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background-color 0.2s;
+    }
+
+    .close-popup:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .upi-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      background: #fff;
+      padding: 4px;
+    }
+
+    .qr-code {
+      width: 90px;
+      height: 90px;
+      border-radius: 4px;
+      border: 1px solid #4a4a4a;
+    }
+
+    .copy-notification {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 4px;
+      z-index: 1002;
+      display: none;
+      font-size: 14px;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; bottom: 0; }
+      to { opacity: 1; bottom: 20px; }
+    }
+
+    /* Responsive styles */
+    @media screen and (max-width: 768px) {
+      body {
+        padding-top: 50px;
+      }
+      
+      .navbar {
+        height: 50px;
+      }
+
+      .nav-buttons {
+        gap: 10px;
+      }
+      
+      .donate-button {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+
+      .upi-popup {
+        width: 95% !important;
+        padding: 15px !important;
+        max-width: none !important;
+      }
+
+      .main-content {
+        margin-top: 10px;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .navbar {
+        padding: 10px !important;
+      }
+      
+      .donate-button {
+        padding: 6px 10px !important;
+        font-size: 12px !important;
+      }
+      
+      .home-button span {
+        display: none;
+      }
+      
+      .home-icon {
+        margin-right: 0;
+      }
+    }
+
+    /* Add these new styles for eligible tokens */
+    .token.eligible {
+      animation: blink 1s linear infinite;
+      z-index: 2000 !important;
+    }
+    @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    /* Add these new styles for mobile player indicator */
+    @media (max-width: 768px) {
+      .player-info {
+        display: none;  /* Hide the original player info boxes */
+      }
+      
+      .dice-container {
+        position: relative;
+        margin-top: 10px;
+        display: flex;
+        flex-direction: row;  /* Change to row to align items horizontally */
+        align-items: center;
+        gap: 15px;  /* Add space between indicator and dice */
+      }
+      
+      .current-player-indicator {
+        width: 80px;  /* Make it wider */
+        height: 40px;  /* Make it shorter */
+        border-radius: 4px;  /* Smaller border radius for more rectangular look */
+        border: 2px solid rgba(0,0,0,0.2);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        position: relative;
+      }
+      
+      .current-player-indicator::after {
+        content: 'Turn';
+        display: block;
+        margin-top: 10px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #333;
+        text-align: center;
+      }
+      
+      /* Adjust the dice container to accommodate the new layout */
+      .dice-container > div:not(.current-player-indicator) {
+        margin: 0;  /* Remove default margins */
+      }
+      
+      /* Make buttons take full width */
+      .dice-container button {
+        width: 100%;
+      }
+      
+      /* Stack buttons vertically */
+      .dice-container {
+        flex-wrap: wrap;
+      }
+      
+      .controls-header {
+        margin-bottom: 10px;
+      }
+      
+      .game-controls {
+        padding: 15px;
+      }
+    }
+
+    /* Add these styles */
+    .player-count-select {
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      background-color: white;
+      font-size: 14px;
+      cursor: pointer;
+      outline: none;
+      margin-left: 10px;
+    }
+
+    .player-count-select:hover {
+      border-color: var(--blue-color);
+    }
+
+    @media (max-width: 768px) {
+      .dice-indicator-wrapper {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        width: 100%;
+      }
+
+      .controls-right {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Replace the existing header with this new navbar -->
+  <nav class="navbar">
+    <a href="index.html" class="home-button">
+      <svg class="home-icon" viewBox="0 0 24 24">
+        <path d="M9.005 16.545a2.997 2.997 0 012.997-2.997h0A2.997 2.997 0 0115 16.545V22h7V11.543L12 2 2 11.543V22h7.005z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"/>
+      </svg>
+      Home
+    </a>
+    <div class="nav-buttons">
+      <button class="donate-button" onclick="showUPIPopup()">
+        <svg class="donate-icon" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+        </svg>
+        Donate
+      </button>
+    </div>
+  </nav>
+
+  <!-- Add UPI popup elements -->
+  <div class="overlay" id="overlay" onclick="hideUPIPopup()"></div>
+  <div class="upi-popup" id="upiPopup">
+    <button class="close-popup" onclick="hideUPIPopup()">×</button>
+    <h3>Support My Work with UPI</h3>
+    <div class="upi-option" onclick="copyUPI('niteeshkumarbanks-1@okicici')">
+      <div class="upi-details">
+        <img src="images/gpay_icon.png" alt="Google Pay" class="upi-icon">
+        <div>
+          <p>Google Pay</p>
+          <p class="upi-id">niteeshkumarbanks-1@okicici</p>
+        </div>
+      </div>
+      <img src="images/google_pay_qr.jpg" alt="Google Pay QR Code" class="qr-code">
+    </div>
+  </div>
+
+  <div class="copy-notification" id="copyNotification">UPI ID copied to clipboard!</div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="game-container">
+      <div class="board-container">
+        <div class="board">
+          <!-- Red base -->
+          <div class="base red-base">
+            <div class="home-square">
+              <div class="token red-token" data-player="red" data-token="1"></div>
+              <div class="token red-token" data-player="red" data-token="2"></div>
+              <div class="token red-token" data-player="red" data-token="3"></div>
+              <div class="token red-token" data-player="red" data-token="4"></div>
+            </div>
+          </div>
+          
+          <!-- Green base -->
+          <div class="base green-base">
+            <div class="home-square">
+              <div class="token green-token" data-player="green" data-token="1"></div>
+              <div class="token green-token" data-player="green" data-token="2"></div>
+              <div class="token green-token" data-player="green" data-token="3"></div>
+              <div class="token green-token" data-player="green" data-token="4"></div>
+            </div>
+          </div>
+          
+          <!-- Blue base -->
+          <div class="base blue-base">
+            <div class="home-square">
+              <div class="token blue-token" data-player="blue" data-token="1"></div>
+              <div class="token blue-token" data-player="blue" data-token="2"></div>
+              <div class="token blue-token" data-player="blue" data-token="3"></div>
+              <div class="token blue-token" data-player="blue" data-token="4"></div>
+            </div>
+          </div>
+          
+          <!-- Yellow base -->
+          <div class="base yellow-base">
+            <div class="home-square">
+              <div class="token yellow-token" data-player="yellow" data-token="1"></div>
+              <div class="token yellow-token" data-player="yellow" data-token="2"></div>
+              <div class="token yellow-token" data-player="yellow" data-token="3"></div>
+              <div class="token yellow-token" data-player="yellow" data-token="4"></div>
+            </div>
+          </div>
+          
+          <!-- Center image area -->
+          <div class="center-container">
+            <img class="center-image" src="images/center.png" alt="Ludo Center" />
+          </div>
+          
+          <!-- Red vertical path -->
+          <div class="cell red-path" style="grid-column: 7; grid-row: 1;"><span class="cell-number">11</span></div>
+          <div class="cell red-path" style="grid-column: 7; grid-row: 2;"><span class="cell-number">10</span></div>
+          <div class="cell safe-cell" style="grid-column: 7; grid-row: 3;"><span class="star red-star">★</span><span class="cell-number">9</span></div>
+          <div class="cell red-path" style="grid-column: 7; grid-row: 4;"><span class="cell-number">8</span></div>
+          <div class="cell red-path" style="grid-column: 7; grid-row: 5;"><span class="cell-number">7</span></div>
+          <div class="cell red-path" style="grid-column: 7; grid-row: 6;"><span class="cell-number">6</span></div>
+          
+          <!-- Red horizontal path -->
+          <div class="cell red-path" style="grid-column: 1; grid-row: 7;"><span class="cell-number">52</span></div>
+          <div class="cell safe-cell" style="grid-column: 2; grid-row: 7; background-color: var(--red-color);"><span class="cell-number">1</span></div>
+          <div class="cell red-path" style="grid-column: 3; grid-row: 7;"><span class="cell-number">2</span></div>
+          <div class="cell" style="grid-column: 4; grid-row: 7;"><span class="cell-number">3</span></div>
+          <div class="cell red-path" style="grid-column: 5; grid-row: 7;"><span class="cell-number">4</span></div>
+          <div class="cell red-path" style="grid-column: 6; grid-row: 7;"><span class="cell-number">5</span></div>
+          
+          <!-- Green vertical path -->
+          <div class="cell green-path" style="grid-column: 9; grid-row: 1;"><span class="cell-number">13</span></div>
+          <div class="cell safe-cell" style="grid-column: 9; grid-row: 2; background-color: var(--green-color);"><span class="cell-number">14</span></div>
+          <div class="cell green-path" style="grid-column: 9; grid-row: 3;"><span class="cell-number">15</span></div>
+          <div class="cell green-path" style="grid-column: 9; grid-row: 4;"><span class="cell-number">16</span></div>
+          <div class="cell green-path" style="grid-column: 9; grid-row: 5;"><span class="cell-number">17</span></div>
+          <div class="cell" style="grid-column: 9; grid-row: 6;"><span class="cell-number">18</span></div>
+          
+          <!-- Green horizontal path -->
+          <div class="cell green-path" style="grid-column: 10; grid-row: 7;"><span class="cell-number">19</span></div>
+          <div class="cell green-path" style="grid-column: 11; grid-row: 7;"><span class="cell-number">20</span></div>
+          <div class="cell green-path" style="grid-column: 12; grid-row: 7;"><span class="cell-number">21</span></div>
+          <div class="cell safe-cell" style="grid-column: 13; grid-row: 7;"><span class="star green-star">★</span><span class="cell-number">22</span></div>
+          <div class="cell" style="grid-column: 14; grid-row: 7;"><span class="cell-number">23</span></div>
+          <div class="cell green-path" style="grid-column: 15; grid-row: 7;"><span class="cell-number">24</span></div>
+          
+          <!-- Blue vertical path -->
+          <div class="cell blue-path" style="grid-column: 7; grid-row: 10;"><span class="cell-number">44</span></div>
+          <div class="cell blue-path" style="grid-column: 7; grid-row: 11;"><span class="cell-number">43</span></div>
+          <div class="cell" style="grid-column: 7; grid-row: 12;"><span class="cell-number">42</span></div>
+          <div class="cell blue-path" style="grid-column: 7; grid-row: 13;"><span class="cell-number">41</span></div>
+          <div class="cell safe-cell" style="grid-column: 7; grid-row: 14; background-color: var(--blue-color);"><span class="cell-number">40</span></div>
+          <div class="cell blue-path" style="grid-column: 7; grid-row: 15;"><span class="cell-number">39</span></div>
+          
+          <!-- Blue horizontal path -->
+          <div class="cell blue-path" style="grid-column: 1; grid-row: 9;"><span class="cell-number">50</span></div>
+          <div class="cell blue-path" style="grid-column: 2; grid-row: 9;"><span class="cell-number">49</span></div>
+          <div class="cell safe-cell" style="grid-column: 3; grid-row: 9;"><span class="star yellow-star">★</span><span class="cell-number">48</span></div>
+          <div class="cell blue-path" style="grid-column: 4; grid-row: 9;"><span class="cell-number">47</span></div>
+          <div class="cell blue-path" style="grid-column: 5; grid-row: 9;"><span class="cell-number">46</span></div>
+          <div class="cell blue-path" style="grid-column: 6; grid-row: 9;"><span class="cell-number">45</span></div>
+          
+          <!-- Yellow vertical path -->
+          <div class="cell yellow-path" style="grid-column: 9; grid-row: 10;"><span class="cell-number">32</span></div>
+          <div class="cell yellow-path" style="grid-column: 9; grid-row: 11;"><span class="cell-number">33</span></div>
+          <div class="cell yellow-path" style="grid-column: 9; grid-row: 12;"><span class="cell-number">34</span></div>
+          <div class="cell safe-cell" style="grid-column: 9; grid-row: 13;"><span class="star blue-star">★</span><span class="cell-number">35</span></div>
+          <div class="cell yellow-path" style="grid-column: 9; grid-row: 14;"><span class="cell-number">36</span></div>
+          <div class="cell yellow-path" style="grid-column: 9; grid-row: 15;"><span class="cell-number">37</span></div>
+          
+          <!-- Yellow horizontal path -->
+          <div class="cell yellow-path" style="grid-column: 10; grid-row: 9;"><span class="cell-number">31</span></div>
+          <div class="cell yellow-path" style="grid-column: 11; grid-row: 9;"><span class="cell-number">30</span></div>
+          <div class="cell" style="grid-column: 12; grid-row: 9;"><span class="cell-number">29</span></div>
+          <div class="cell yellow-path" style="grid-column: 13; grid-row: 9;"><span class="cell-number">28</span></div>
+          <div class="cell safe-cell" style="grid-column: 14; grid-row: 9; background-color: var(--yellow-color);"><span class="cell-number">27</span></div>
+          <div class="cell yellow-path" style="grid-column: 15; grid-row: 9;"><span class="cell-number">26</span></div>
+          
+          <!-- White middle column (top) -->
+          <div class="cell" style="grid-column: 8; grid-row: 1;"><span class="cell-number">12</span></div>
+          <div class="cell" style="grid-column: 8; grid-row: 2;">
+            <span class="arrow" style="font-size: 24px; color: #000; z-index: 1000;">↓</span>
+            <span class="cell-number">G1</span>
+          </div>
+          <div class="cell" style="grid-column: 8; grid-row: 3;"><span class="cell-number">G2</span></div>
+          <div class="cell" style="grid-column: 8; grid-row: 4;"><span class="cell-number">G3</span></div>
+          <div class="cell" style="grid-column: 8; grid-row: 5;"><span class="cell-number">G4</span></div>
+          <div class="cell" style="grid-column: 8; grid-row: 6;"><span class="cell-number">G5</span></div>
+          
+          <!-- White middle column (bottom) -->
+          <div class="cell" style="grid-column: 8; grid-row: 10;"><span class="cell-number">B5</span></div>
+          <div class="cell" style="grid-column: 8; grid-row: 11;"><span class="cell-number">B4</span></div>
+          <div class="cell" style="grid-column: 8; grid-row: 12;"><span class="cell-number">B3</span></div>
+          <div class="cell" style="grid-column: 8; grid-row: 13;"><span class="cell-number">B2</span></div>
+          <div class="cell" style="grid-column: 8; grid-row: 14;">
+            <span class="arrow" style="font-size: 24px; color: #000; z-index: 1000;">↑</span>
+            <span class="cell-number">B1</span>
+          </div>
+          <div class="cell" style="grid-column: 8; grid-row: 15;"><span class="cell-number">38</span></div>
+          
+          <!-- Red Home Path (horizontal) -->
+          <div class="cell red-home-path home-path" style="grid-column: 2; grid-row: 8;">
+            <span class="cell-number">R1</span>
+            <span class="arrow">→</span>
+          </div>
+          <div class="cell red-home-path home-path" style="grid-column: 3; grid-row: 8;"><span class="cell-number">R2</div>
+          <div class="cell red-home-path home-path" style="grid-column: 4; grid-row: 8;"><span class="cell-number">R3</div>
+          <div class="cell red-home-path home-path" style="grid-column: 5; grid-row: 8;"><span class="cell-number">R4</div>
+          <div class="cell red-home-path home-path" style="grid-column: 6; grid-row: 8;"><span class="cell-number">R5</div>
+          
+          <!-- Green Home Path (horizontal) -->
+          <div class="cell green-home-path home-path" style="grid-column: 10; grid-row: 8;"><span class="cell-number">Y5</span></div>
+          <div class="cell green-home-path home-path" style="grid-column: 11; grid-row: 8;"><span class="cell-number">Y4</span></div>
+          <div class="cell green-home-path home-path" style="grid-column: 12; grid-row: 8;"><span class="cell-number">Y3</span></div>
+          <div class="cell green-home-path home-path" style="grid-column: 13; grid-row: 8;"><span class="cell-number">Y2</span></div>
+          <div class="cell green-home-path home-path" style="grid-column: 14; grid-row: 8;">
+            <span class="cell-number">Y1</span>
+            <span class="arrow">←</span>
+          </div>
+          
+          <!-- Blue Home Path (vertical) -->
+          <div class="cell blue-home-path home-path" style="grid-column: 8; grid-row: 10;"></div>
+          <div class="cell blue-home-path home-path" style="grid-column: 8; grid-row: 11;"></div>
+          <div class="cell blue-home-path home-path" style="grid-column: 8; grid-row: 12;"></div>
+          <div class="cell blue-home-path home-path" style="grid-column: 8; grid-row: 13;"></div>
+          <div class="cell blue-home-path home-path" style="grid-column: 8; grid-row: 14;"></div>
+          
+          <!-- Yellow Home Path (vertical) -->
+          <div class="cell yellow-home-path home-path" style="grid-column: 8; grid-row: 2;"></div>
+          <div class="cell yellow-home-path home-path" style="grid-column: 8; grid-row: 3;"></div>
+          <div class="cell yellow-home-path home-path" style="grid-column: 8; grid-row: 4;"></div>
+          <div class="cell yellow-home-path home-path" style="grid-column: 8; grid-row: 5;"></div>
+          <div class="cell yellow-home-path home-path" style="grid-column: 8; grid-row: 6;"></div>
+
+          <!-- Additional squares in column 1 -->
+          <!-- Square between 50 and 52 -->
+          <div class="cell" style="grid-column: 1; grid-row: 8;"><span class="cell-number">51</span></div>
+
+          <!-- Additional squares in column 15 -->
+          <!-- Square between 24 and 26 -->
+          <div class="cell" style="grid-column: 15; grid-row: 8;"><span class="cell-number">25</span></div>
+        </div>
+      </div>
+      
+      <!-- Game Controls -->
+      <div class="game-controls">
+        <div class="controls-header">
+          <h2>Game Controls</h2>
+        </div>
+        
+        <!-- Player info boxes (hidden on mobile) -->
+        <div class="player-info player-turn">
+          <div style="display: flex; align-items: center;">
+            <div class="player-color" style="background-color: var(--red-color);"></div>
+            <span class="player-name">Player 1 (Red)</span>
+          </div>
+          <span>Turn</span>
+        </div>
+        
+        <div class="player-info">
+          <div style="display: flex; align-items: center;">
+            <div class="player-color" style="background-color: var(--green-color);"></div>
+            <span class="player-name">Player 2 (Green)</span>
+          </div>
+          <span>Waiting</span>
+        </div>
+        
+        <div class="player-info">
+          <div style="display: flex; align-items: center;">
+            <div class="player-color" style="background-color: var(--yellow-color);"></div>
+            <span class="player-name">Player 3 (Yellow)</span>
+          </div>
+          <span>Waiting</span>
+        </div>
+        
+        <div class="player-info">
+          <div style="display: flex; align-items: center;">
+            <div class="player-color" style="background-color: var(--blue-color);"></div>
+            <span class="player-name">Player 4 (Blue)</span>
+          </div>
+          <span>Waiting</span>
+        </div>
+        
+        <div class="dice-container">
+          <div class="dice-indicator-wrapper">
+            <div class="current-player-indicator"></div>
+            <div class="controls-right">
+              <div class="dice" id="dice">?</div>
+              <select class="player-count-select" id="playerCount">
+                <option value="2">2 Players</option>
+                <option value="3">3 Players</option>
+                <option value="4" selected>4 Players</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary" id="roll-dice">
+            <span class="btn-icon">🎲</span> Roll Dice
+          </button>
+          <button class="btn btn-secondary" id="start-game">
+            <span class="btn-icon">🔄</span> Start New Game
+          </button>
+        </div>
+        
+        <div class="game-message" id="game-message">
+          Click "Roll Dice" to start playing!
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Footer -->
+  <div class="footer">
+    <p>© 2025 Ludo Game by Niteesh Kumar</p>
+    <p><a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a> | <a href="#">Contact</a></p>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Update game state to include consecutive sixes counter
+      const gameState = {
+        currentPlayer: 'red',
+        diceValue: 0,
+        consecutiveSixes: 0,
+        extraMoveForCapture: false,
+        playerStartPositions: {
+          red: 1,
+          green: 14,
+          yellow: 27,
+          blue: 40
+        },
+        playerHomePaths: {
+          red: [101, 102, 103, 104, 105],    // R1 -> R5
+          green: [201, 202, 203, 204, 205],  // G1 -> G5
+          blue: [301, 302, 303, 304, 305],   // B1 -> B5
+          yellow: [401, 402, 403, 404, 405]   // Y1 -> Y5
+        },
+        tokens: {
+          red: Array(4).fill('home'),
+          green: Array(4).fill('home'),
+          yellow: Array(4).fill('home'),
+          blue: Array(4).fill('home')
+        },
+        previousPositions: {
+          red: [],
+          green: [],
+          yellow: [],
+          blue: []
+        },
+        activePlayers: ['red', 'green', 'yellow', 'blue'],  // Changed order to match player numbers
+        finishedPlayers: []
+      };
+
+      const SPECIAL_POSITIONS = {
+        redEntry: 1,      // Red starts from position 1
+        greenEntry: 14,   // Green starts from position 14
+        yellowEntry: 27,  // Yellow starts from position 27
+        blueEntry: 40,    // Blue starts from position 40
+        
+        redToHome: 51,    // After 51, red moves to home path
+        greenToHome: 12,  // After 12, green moves to home path
+        yellowToHome: 25, // After 25, yellow moves to home path
+        blueToHome: 38,   // After 38, blue moves to home path
+        
+        safePositions: [9, 22, 35, 48],  // Star positions
+        startPositions: [1, 14, 27, 40]  // Starting positions
+      };
+
+      const HOME_THRESHOLDS = {
+        red: 51,
+        green: 12,
+        blue: 38,
+        yellow: 25
+      };
+
+      const HOME_PATH_CELLS = {
+        red: ['R1', 'R2', 'R3', 'R4', 'R5'],
+        green: ['G1', 'G2', 'G3', 'G4', 'G5'],
+        blue: ['B1', 'B2', 'B3', 'B4', 'B5'],
+        yellow: ['Y1', 'Y2', 'Y3', 'Y4', 'Y5']
+      };
+
+      // DOM elements
+      const startGameBtn = document.getElementById('start-game');
+      const rollDiceBtn = document.getElementById('roll-dice');
+      const gameMessage = document.getElementById('game-message');
+      const diceElement = document.getElementById('dice');
+      const board = document.querySelector('.board');
+
+      // Add this to your existing JavaScript, inside the DOMContentLoaded event listener
+      const playerCountSelect = document.getElementById('playerCount');
+
+      function initializeTokens() {
+        const tokens = document.querySelectorAll('.token');
+        tokens.forEach(token => {
+          token.addEventListener('click', handleTokenClick);
+        });
+      }
+
+      function handleTokenClick(event) {
+        if (gameState.extraMoveForCapture) return;
+        
+        const token = event.target;
+        const player = token.dataset.player;
+        const tokenIndex = parseInt(token.dataset.token) - 1;
+
+        if (player !== gameState.currentPlayer) {
+          gameMessage.textContent = "It's not your turn!";
+          return;
+        }
+
+        if (gameState.diceValue === 0) {
+          gameMessage.textContent = "Please roll the dice first!";
+          return;
+        }
+
+        const currentPosition = gameState.tokens[player][tokenIndex];
+
+        // Handle different token movement scenarios
+        if (gameState.diceValue === 6 && currentPosition === 'home') {
+          moveTokenOutOfHome(token, player, tokenIndex);
+        } else if (currentPosition !== 'home') {
+          moveTokenOnBoard(token, player, tokenIndex);
+        } else {
+          gameMessage.textContent = "You need a 6 to move this token out!";
+        }
+      }
+
+      function moveTokenOutOfHome(token, player, tokenIndex) {
+        const startPosition = gameState.playerStartPositions[player];
+        const targetCell = findCellByNumber(startPosition);
+
+        if (!targetCell) {
+          console.error('Target cell not found!');
+          return;
+        }
+
+        // Create and position token clone
+        const tokenClone = token.cloneNode(true);
+        tokenClone.classList.add('in-play');
+        tokenClone.dataset.player = player;
+        tokenClone.dataset.token = tokenIndex + 1;
+        tokenClone.addEventListener('click', handleTokenClick);
+
+        const cellRect = targetCell.getBoundingClientRect();
+        const boardRect = board.getBoundingClientRect();
+
+        tokenClone.style.position = 'absolute';
+        tokenClone.style.left = `${cellRect.left - boardRect.left + (cellRect.width/2)}px`;
+        tokenClone.style.top = `${cellRect.top - boardRect.top + (cellRect.height/2)}px`;
+        tokenClone.style.width = '25px';
+        tokenClone.style.height = '25px';
+        tokenClone.style.margin = '0';
+        tokenClone.style.transform = 'translate(-50%, -50%)';
+        tokenClone.style.zIndex = '1000';
+
+        board.appendChild(tokenClone);
+
+        // Update game state
+        gameState.tokens[player][tokenIndex] = startPosition;
+        
+        // Hide original token in home base
+        token.style.visibility = 'hidden';
+
+        // Reset dice value and handle turn
+        gameState.diceValue = 0;
+        
+        // If it was a six, allow another roll
+        if (gameState.consecutiveSixes > 0) {
+          gameMessage.textContent = "You got a 6! Roll again!";
+        } else {
+          moveToNextPlayer();
+        }
+      }
+
+      function isSafePosition(position) {
+        return SPECIAL_POSITIONS.safePositions.includes(position) || 
+               SPECIAL_POSITIONS.startPositions.includes(position);
+      }
+
+      function moveTokenOnBoard(token, player, tokenIndex) {
+        const currentPosition = gameState.tokens[player][tokenIndex];
+        let newPosition;
+        
+        // If token is already in the home path, move it along the home path:
+        if (typeof currentPosition === 'string' && isHomePathValue(player, currentPosition)) {
+          newPosition = moveAlongHomePath(player, currentPosition, gameState.diceValue);
+        }
+        // Otherwise, if the move from the main track crosses the threshold:
+        else if (shouldEnterHomePath(player, currentPosition, gameState.diceValue)) {
+          newPosition = enterHomePathFromMain(player, currentPosition, gameState.diceValue);
+        } else {
+          newPosition = calculateNewPosition(player, currentPosition, gameState.diceValue);
+        }
+
+        // If no valid new position, do not proceed.
+        if (!newPosition) return;
+
+        // Check if the token has reached the center (victory condition):
+        if (newPosition === "center") {
+          handleTokenVictory(token, player, tokenIndex);
+          return;
+        }
+        
+        const targetCell = findCellByNumber(newPosition);
+        if (!targetCell) return;
+
+        // Retrieve the token element (either original or clone)
+        const tokenElement = token.classList.contains('in-play') ? 
+          token : 
+          document.querySelector(`.token.in-play[data-player="${player}"][data-token="${tokenIndex + 1}"]`);
+
+        if (!tokenElement) {
+          console.error('Token element not found');
+          return;
+        }
+        
+        // (Optional) Only attempt capturing if the token is still on the main track.
+        if (!(typeof currentPosition === 'string' && isHomePathValue(player, currentPosition))) {
+          const opponentTokens = getOpponentTokensAtPosition(newPosition, player);
+          const didCapture = opponentTokens.length > 0 && !isSafePosition(newPosition);
+          if (didCapture) {
+            opponentTokens.forEach(captureToken);
+            gameState.extraMoveForCapture = true;
+          }
+        }
+        
+        // Update the token's visual position
+        positionTokenOnCell(tokenElement, targetCell);
+        
+        // Update game state with the new position
+        gameState.tokens[player][tokenIndex] = newPosition;
+
+        // If token reached center, handle victory.
+        if (newPosition === "center") {
+          handleTokenVictory(tokenElement, player, tokenIndex);
+          return;
+        }
+
+        // Proceed with post-move logic (which will change turn, etc.)
+        handlePostMoveLogic(gameState.extraMoveForCapture);
+      }
+
+      function calculateNewPosition(player, currentPosition, diceValue) {
+        // Convert position to number if it's a string
+        const current = parseInt(currentPosition);
+        let newPosition = current + diceValue;
+        
+        // Handle wrap-around (assuming 52 positions total)
+        if (newPosition > 52) {
+            newPosition = newPosition - 52;
+        }
+        
+        return newPosition;
+      }
+
+      function handlePostMoveLogic(didCapture = false) {
+        if (didCapture) {
+          gameMessage.textContent = `${gameState.currentPlayer.toUpperCase()} gets another move after capturing!`;
+          gameState.diceValue = 0;
+          return;
+        }
+        
+        // When a dice roll of 6 occurs, we simply check the count already maintained by handleDiceRoll.
+        if (gameState.diceValue === 6) {
+          if (gameState.consecutiveSixes === 3) {
+            handleThreeSixes();
+          } else {
+            gameMessage.textContent = `${gameState.currentPlayer.toUpperCase()} rolled a 6! Roll again.`;
+            gameState.diceValue = 0;
+          }
+        } else {
+          gameState.diceValue = 0;
+          gameState.consecutiveSixes = 0;
+          moveToNextPlayer();
+        }
+      }
+
+      function handleThreeSixes() {
+        gameMessage.textContent = "Three sixes in a row! All moves cancelled!";
+        
+        // Revert to positions before the first six
+        revertToStoredPositions();
+        
+        // Reset counters
+        gameState.consecutiveSixes = 0;
+        gameState.diceValue = 0;
+        
+        // Move to next player
+        setTimeout(() => {
+          moveToNextPlayer();
+        }, 2000);
+      }
+
+      function storePreviousPositions() {
+        if (gameState.consecutiveSixes === 0) {
+          // Only store positions before first six
+          Object.keys(gameState.tokens).forEach(player => {
+            gameState.previousPositions[player] = [...gameState.tokens[player]];
+          });
+        }
+      }
+
+      // Updated revertToStoredPositions to revert only the current player's tokens
+      function revertToStoredPositions() {
+        const currentPlayer = gameState.currentPlayer;
+        const prevPositions = gameState.previousPositions[currentPlayer];
+        // For each token of the current player, if its position has changed since the chain began,
+        // revert it to the stored snapshot.
+        gameState.tokens[currentPlayer].forEach((currentPos, index) => {
+          if (currentPos !== prevPositions[index]) {
+            // Revert the game state for only this token.
+            gameState.tokens[currentPlayer][index] = prevPositions[index];
+
+            // Remove any in-play clone for this token.
+            const tokenClone = document.querySelector(
+              `.token.in-play[data-player="${currentPlayer}"][data-token="${index + 1}"]`
+            );
+            if (tokenClone) {
+              tokenClone.remove();
+            }
+
+            // If the token should revert to its base ('home'), ensure the original token is visible.
+            if (prevPositions[index] === 'home') {
+              const homeToken = document.querySelector(
+                `.home-square .token[data-player="${currentPlayer}"][data-token="${index + 1}"]`
+              );
+              if (homeToken) {
+                homeToken.style.visibility = 'visible';
+              }
+            } else {
+              // Otherwise, the token should remain on the board.
+              // Hide the original home token (if any) and re-add a token clone at the stored board position.
+              const homeToken = document.querySelector(
+                `.home-square .token[data-player="${currentPlayer}"][data-token="${index + 1}"]`
+              );
+              if (homeToken) {
+                homeToken.style.visibility = 'hidden';
+              }
+              const targetCell = findCellByNumber(prevPositions[index]);
+              if (targetCell) {
+                const newTokenClone = document.createElement('div');
+                // IMPORTANT: Add the player's token color class (e.g. "yellow-token", "red-token", etc.)
+                newTokenClone.classList.add('token', 'in-play', `${currentPlayer}-token`);
+                newTokenClone.dataset.player = currentPlayer;
+                newTokenClone.dataset.token = index + 1;
+                newTokenClone.style.width = '25px';
+                newTokenClone.style.height = '25px';
+                newTokenClone.style.position = 'absolute';
+                newTokenClone.style.transform = 'translate(-50%, -50%)';
+                // IMPORTANT: Attach the click event listener so the reverted token is interactive.
+                newTokenClone.addEventListener('click', handleTokenClick);
+                // Position the token correctly within the cell.
+                positionTokenOnCell(newTokenClone, targetCell);
+                board.appendChild(newTokenClone);
+              }
+            }
+          }
+        });
+      }
+
+      // New helper function to check if a move is valid for a token
+      function isMoveValid(player, pos, diceValue) {
+        if (pos === 'home') {
+          return diceValue === 6;
+        }
+        if (pos === 'center') {
+          return false;
+        }
+        if (typeof pos === 'number') {
+          const threshold = HOME_THRESHOLDS[player];
+          // If the token is on the main board and the move takes it past the threshold,
+          // ensure that the overshoot does not exceed the length of the home path.
+          if (pos < threshold && pos + diceValue > threshold) {
+            const overshoot = pos + diceValue - threshold;
+            return overshoot <= HOME_PATH_CELLS[player].length;
+          }
+          return true;
+        }
+        if (typeof pos === 'string' && isHomePathValue(player, pos)) {
+          const index = HOME_PATH_CELLS[player].indexOf(pos);
+          // Valid if the dice roll produces a home path index that is within range (equals means center move)
+          return (index + diceValue) <= HOME_PATH_CELLS[player].length;
+        }
+        return false;
+      }
+
+      // Updated checkValidMoves function to incorporate move validity for tokens on home paths
+      function checkValidMoves() {
+        const currentPlayer = gameState.currentPlayer;
+        const currentTokens = gameState.tokens[currentPlayer];
+        const moveable = currentTokens.some(pos => isMoveValid(currentPlayer, pos, gameState.diceValue));
+        
+        if (!moveable) {
+          gameMessage.textContent = "No eligible moves available. Skipping turn...";
+          setTimeout(() => {
+            gameState.diceValue = 0;
+            moveToNextPlayer();
+          }, 1500);
+          return;
+        }
+        
+        if (gameState.diceValue === 6 && currentTokens.some(pos => pos === 'home')) {
+          gameMessage.textContent = `${currentPlayer.toUpperCase()} rolled a 6! Roll ${gameState.consecutiveSixes} of 3 or move a token.`;
+        } else {
+          gameMessage.textContent = `${currentPlayer.toUpperCase()} rolled a ${gameState.diceValue}. Make your move.`;
+        }
+      }
+
+      // Modify the resetGame function to handle player count
+      function resetGame() {
+        const playerCount = parseInt(playerCountSelect.value);
+        
+        // Reset all tokens to home
+        Object.keys(gameState.tokens).forEach(player => {
+          gameState.tokens[player] = Array(4).fill('home');
+          gameState.previousPositions[player] = Array(4).fill('home');
+        });
+        
+        // Set active players based on count
+        switch(playerCount) {
+          case 2:
+            gameState.activePlayers = ['red', 'green'];
+            break;
+          case 3:
+            gameState.activePlayers = ['red', 'green', 'blue'];
+            break;
+          case 4:
+            gameState.activePlayers = ['red', 'green', 'blue', 'yellow'];
+            break;
+        }
+        
+        gameState.currentPlayer = 'red';
+        gameState.diceValue = 0;
+        gameState.consecutiveSixes = 0;
+        gameState.finishedPlayers = [];
+        
+        // Hide/show player bases based on selection
+        const allBases = document.querySelectorAll('.base');
+        allBases.forEach(base => {
+          const color = base.classList[1].split('-')[0]; // Get color from class name
+          if (gameState.activePlayers.includes(color)) {
+            base.style.opacity = '1';
+            base.style.pointerEvents = 'auto';
+          } else {
+            base.style.opacity = '0.3';
+            base.style.pointerEvents = 'none';
+          }
+        });
+        
+        // Remove any in-play tokens
+        const inPlayTokens = document.querySelectorAll('.token.in-play');
+        inPlayTokens.forEach(token => token.remove());
+        
+        // Show tokens in active bases
+        const homeTokens = document.querySelectorAll('.home-square .token');
+        homeTokens.forEach(token => {
+          const player = token.dataset.player;
+          if (gameState.activePlayers.includes(player)) {
+            token.style.visibility = 'visible';
+            token.style.opacity = '1';
+          } else {
+            token.style.visibility = 'hidden';
+            token.style.opacity = '0.3';
+          }
+        });
+        
+        updatePlayerTurnUI();
+        gameMessage.textContent = "New game started! Red's turn to roll.";
+      }
+
+      // Add event listener for player count changes
+      playerCountSelect.addEventListener('change', () => {
+        resetGame();
+      });
+
+      function shouldEnterHomePath(player, currentPosition, diceValue) {
+        const normalizedPos = getNormalizedPosition(player, currentPosition);
+        // Use 50 as the effective threshold for all players.
+        // If the progress plus diceValue exceeds 50, the token should enter the home path.
+        return (normalizedPos + diceValue) > 50;
+      }
+
+      function enterHomePathFromMain(player, currentPosition, diceValue) {
+        const normalizedPos = getNormalizedPosition(player, currentPosition);
+        // Calculate the overshoot beyond 50; this determines the index into the player's home path.
+        const overshoot = normalizedPos + diceValue - 50;
+        if (overshoot > HOME_PATH_CELLS[player].length) {
+          gameMessage.textContent = "Dice roll exceeds home path length. Move not possible.";
+          return currentPosition; // invalid move; remain in place
+        }
+        return HOME_PATH_CELLS[player][overshoot - 1];
+      }
+
+      function moveAlongHomePath(player, currentPosition, diceValue) {
+        // When a token is already in the home path, move it forward.
+        let index = HOME_PATH_CELLS[player].indexOf(currentPosition);
+        let newIndex = index + diceValue;
+        
+        if (newIndex < HOME_PATH_CELLS[player].length) {
+          // Normal move within the home path.
+          return HOME_PATH_CELLS[player][newIndex];
+        } else if (newIndex === HOME_PATH_CELLS[player].length) {
+          // Exactly enough to move into the victory square.
+          return "center";
+        } else {
+          // Roll is too high: do not move.
+          gameMessage.textContent = "Exact dice roll required to move into victory square!";
+          return;
+        }
+      }
+
+      function getOpponentTokensAtPosition(position, currentPlayer) {
+        const targetCell = findCellByNumber(position);
+        if (!targetCell) return [];
+        const targetRect = targetCell.getBoundingClientRect();
+        const opponentTokens = [];
+        // Look only among tokens in play (clones)
+        const allTokens = document.querySelectorAll('.token.in-play');
+        
+        allTokens.forEach(token => {
+          const tokenPlayer = token.dataset.player;
+          // Only want opponent tokens
+          if (tokenPlayer === currentPlayer) return;
+          
+          const tokenRect = token.getBoundingClientRect();
+          // Compute the centers
+          const tokenCenterX = tokenRect.left + tokenRect.width / 2;
+          const tokenCenterY = tokenRect.top + tokenRect.height / 2;
+          const cellCenterX = targetRect.left + targetRect.width / 2;
+          const cellCenterY = targetRect.top + targetRect.height / 2;
+          
+          // Lower the tolerance to 7px to avoid capturing tokens that only slightly overlap
+          if (Math.abs(tokenCenterX - cellCenterX) < 7 && Math.abs(tokenCenterY - cellCenterY) < 7) {
+            opponentTokens.push({
+              element: token,
+              player: tokenPlayer,
+              index: parseInt(token.dataset.token) - 1
+            });
+          }
+        });
+        
+        return opponentTokens;
+      }
+
+      function captureToken(tokenInfo) {
+        const { element, player, index } = tokenInfo;
+        
+        // Add capture animation class
+        element.classList.add('captured');
+        
+        // Remove token after animation
+        setTimeout(() => {
+          element.remove();
+          
+          // Show original token in home base
+          const homeToken = document.querySelector(
+            `.home-square .token[data-player="${player}"][data-token="${index + 1}"]`
+          );
+          if (homeToken) {
+            homeToken.style.visibility = 'visible';
+          }
+          
+          // Update game state
+          gameState.tokens[player][index] = 'home';
+        }, 500); // Match this with your capture animation duration
+        
+        // Show capture message
+        gameMessage.textContent = `Captured ${player}'s token!`;
+      }
+
+      function positionTokenOnCell(token, cell) {
+        const cellRect = cell.getBoundingClientRect();
+        const boardRect = board.getBoundingClientRect();
+        
+        // Get position number from cell
+        const cellNumber = cell.querySelector('.cell-number');
+        const positionNumber = cellNumber ? parseInt(cellNumber.textContent) : 0;
+        
+        token.style.position = 'absolute';
+        token.style.left = `${cellRect.left - boardRect.left + (cellRect.width/2)}px`;
+        token.style.top = `${cellRect.top - boardRect.top + (cellRect.height/2)}px`;
+        token.style.width = '25px';
+        token.style.height = '25px';
+        token.style.margin = '0';
+        token.style.transform = 'translate(-50%, -50%)';
+        
+        // Set z-index based on position
+        if (isSafePosition(positionNumber)) {
+          token.style.zIndex = '1001'; // Higher z-index for safe positions
+        } else {
+          token.style.zIndex = '1000';
+        }
+      }
+
+      function findCellByNumber(number) {
+        const cells = document.querySelectorAll('.cell');
+        return Array.from(cells).find(cell => {
+          const cellNumber = cell.querySelector('.cell-number');
+          return cellNumber && cellNumber.textContent.trim() === number.toString();
+        });
+      }
+
+      function hasTokenReachedEndOfHomePath(player, position) {
+        const homePath = gameState.playerHomePaths[player];
+        return position > homePath[homePath.length - 1];
+      }
+
+      // Modify moveToNextPlayer to respect player count
+      function moveToNextPlayer() {
+        gameState.consecutiveSixes = 0;
+        const currentIndex = gameState.activePlayers.indexOf(gameState.currentPlayer);
+        gameState.currentPlayer = gameState.activePlayers[(currentIndex + 1) % gameState.activePlayers.length];
+        updatePlayerTurnUI();
+        gameMessage.textContent = `${gameState.currentPlayer.toUpperCase()}'s turn`;
+        updateEligibleTokens();
+      }
+
+      function updatePlayerTurnUI() {
+        // Update the original player info boxes
+        const playerInfos = document.querySelectorAll('.player-info');
+        playerInfos.forEach(info => {
+          info.classList.remove('player-turn');
+          if (info.querySelector('.player-name').textContent.toLowerCase().includes(gameState.currentPlayer)) {
+            info.classList.add('player-turn');
+          }
+        });
+        
+        // Update the mobile color indicator
+        const indicator = document.querySelector('.current-player-indicator');
+        if (indicator) {
+          // Set the background color based on current player
+          switch(gameState.currentPlayer) {
+            case 'red':
+              indicator.style.backgroundColor = 'var(--red-color)';
+              break;
+            case 'green':
+              indicator.style.backgroundColor = 'var(--green-color)';
+              break;
+            case 'yellow':
+              indicator.style.backgroundColor = 'var(--yellow-color)';
+              break;
+            case 'blue':
+              indicator.style.backgroundColor = 'var(--blue-color)';
+              break;
+          }
+        }
+      }
+
+      function rollDice() {
+        if (gameState.diceValue !== 0) {
+          gameMessage.textContent = "Please make a move before rolling again!";
+          return;
+        }
+        
+        // Clear the extra move flag so tokens become clickable after a capture extra move.
+        gameState.extraMoveForCapture = false;
+
+        diceElement.classList.add('rolling');
+        diceElement.textContent = '...';
+        rollDiceBtn.disabled = true;
+        
+        // Store current positions before rolling
+        storePreviousPositions();
+        
+        setTimeout(() => {
+          const diceValue = Math.floor(Math.random() * 6) + 1;
+          gameState.diceValue = diceValue;
+          diceElement.textContent = diceValue;
+          diceElement.classList.remove('rolling');
+          rollDiceBtn.disabled = false;
+
+          handleDiceRoll(diceValue);
+        }, 1000);
+      }
+
+      function handleDiceRoll(diceValue) {
+        if (diceValue === 6) {
+          gameState.consecutiveSixes++;
+          
+          if (gameState.consecutiveSixes === 3) {
+            handleThreeSixes();
+            return;
+          }
+          
+          gameMessage.textContent = `${gameState.currentPlayer.toUpperCase()} rolled a 6! Roll ${gameState.consecutiveSixes} of 3 or move a token.`;
+          checkValidMoves();
+          updateEligibleTokens();
+        } else {
+          gameState.consecutiveSixes = 0;
+          checkValidMoves();
+          updateEligibleTokens();
+        }
+      }
+
+      function handleTokenVictory(token, player, tokenIndex) {
+        // Mark the token as having reached the center (victory square)
+        gameState.tokens[player][tokenIndex] = "center";
+        
+        // Reposition the token to the center container (victory square)
+        const centerCell = document.querySelector('.center-container');
+        if (centerCell) {
+          positionTokenOnCell(token, centerCell);
+        }
+        
+        // If all tokens for this player have reached the victory square
+        if (gameState.tokens[player].every(pos => pos === "center")) {
+          // If not already marked finished, record the player's finishing position.
+          if (!gameState.finishedPlayers.includes(player)) {
+            gameState.finishedPlayers.push(player);
+            // Remove the finished player from activePlayers.
+            gameState.activePlayers = gameState.activePlayers.filter(p => p !== player);
+            gameMessage.textContent = `${player.toUpperCase()} finished in position ${gameState.finishedPlayers.length}!`;
+          }
+          
+          // If only one active player remains, finish the game.
+          if (gameState.activePlayers.length === 1) {
+            const lastPlayer = gameState.activePlayers[0];
+            gameState.finishedPlayers.push(lastPlayer);
+            gameMessage.textContent += ` ${lastPlayer.toUpperCase()} gets last place!`;
+            setTimeout(() => {
+              resetGame();
+            }, 3000);
+            return;
+          }
+          
+          // Otherwise, continue play with the remaining players.
+          gameState.diceValue = 0;
+          moveToNextPlayer();
+          return;
+        } else {
+          gameMessage.textContent = "Token reached victory square!";
+          gameState.diceValue = 0;
+        }
+      }
+
+      function updateEligibleTokens() {
+        // First, remove the eligible class from all in-play tokens and disable their pointer events
+        document.querySelectorAll('.token.in-play').forEach(token => {
+          token.classList.remove('eligible');
+          token.style.zIndex = 1000;
+          token.style.pointerEvents = 'none'; // Disable clicks on non-eligible tokens
+        });
+        
+        // Now, add the eligible class and reset pointer events for current player's tokens
+        const currentTokens = document.querySelectorAll(`.token.in-play[data-player="${gameState.currentPlayer}"]`);
+        currentTokens.forEach(token => {
+          const tokenIndex = parseInt(token.dataset.token) - 1;
+          const pos = gameState.tokens[gameState.currentPlayer][tokenIndex];
+          // A token is eligible if it's already in play or if it's in the home base and a 6 was rolled
+          if (pos !== 'home' || (pos === 'home' && gameState.diceValue === 6)) {
+            token.classList.add('eligible');
+            token.style.zIndex = 2000; // Bring the eligible token to the front
+            token.style.pointerEvents = 'auto'; // Ensure it can be clicked
+          }
+        });
+      }
+
+      function isTokenOnHomePath(player, position) {
+        // Token positions in home paths are 101+ for red, 201+ for green, etc.
+        // So if position is less than 100, it is not on the home path.
+        return position >= 100;
+      }
+
+      function isHomePathValue(player, pos) {
+        // Returns true if the stored position (a string) is one of the home path cells.
+        return HOME_PATH_CELLS[player].includes(pos);
+      }
+
+      function getNormalizedPosition(player, pos) {
+        const start = gameState.playerStartPositions[player];
+        // Normalize the numeric position relative to the player's start.
+        // This produces a value from 0 to 51 indicating how far the token has advanced.
+        return ((parseInt(pos) - start + 52) % 52);
+      }
+
+      // Event listeners
+      rollDiceBtn.addEventListener('click', rollDice);
+      startGameBtn.addEventListener('click', resetGame);
+      
+      // Initialize the game
+      initializeTokens();
+    });
+
+    function showUPIPopup() {
+      document.getElementById('upiPopup').classList.add('show');
+      document.getElementById('overlay').classList.add('show');
+    }
+
+    function hideUPIPopup() {
+      document.getElementById('upiPopup').classList.remove('show');
+      document.getElementById('overlay').classList.remove('show');
+    }
+
+    function copyUPI(upiId) {
+      navigator.clipboard.writeText(upiId).then(() => {
+        const notification = document.getElementById('copyNotification');
+        notification.style.display = 'block';
+        
+        // Hide after 3 seconds
+        setTimeout(() => {
+          notification.style.display = 'none';
+        }, 3000);
+        
+      }).catch(err => {
+        console.error('Failed to copy UPI ID:', err);
+        alert('Failed to copy UPI ID. Please copy it manually.');
+      });
+    }
+  </script>
+</body>
+</html>
+   

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>More About Me: Niteesh Kumar</title>
+    <style>
+        body {
+            font-family: 'Calibri', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #2a5885;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #2a5885;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            color: #666;
+        }
+        
+        .document-section {
+            background: white;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid #2a5885;
+        }
+        
+        h2 {
+            color: #2a5885;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        
+        h3 {
+            color: #444;
+            margin: 20px 0 10px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+        }
+        
+        .personal-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .info-card {
+            flex: 1;
+            min-width: 200px;
+            background: #f5f9ff;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .project-links a {
+            display: inline-block;
+            margin: 5px 10px 5px 0;
+            padding: 8px 15px;
+            background: #2a5885;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        
+        .project-links a:hover {
+            background: #1d456e;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+                background: none;
+            }
+            
+            .document-section {
+                box-shadow: none;
+                page-break-inside: avoid;
+            }
+        }
+        
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #0095f6;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            height: 60px;
+            box-sizing: border-box;
+            justify-content: space-between;
+        }
+
+        .home-button {
+            color: #fff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .home-icon {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        @media screen and (max-width: 768px) {
+            body {
+                padding-top: 50px;
+            }
+            
+            .navbar {
+                height: 50px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .navbar {
+                padding: 10px !important;
+            }
+            
+            .home-button span {
+                display: none;
+            }
+            
+            .home-icon {
+                margin-right: 0;
+            }
+        }
+
+        @media screen and (min-width: 768px) {
+            body {
+                padding: 60px;
+            }
+        }
+
+        @media screen and (max-width: 600px) {
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            .document-section {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .info-card {
+                min-width: 100%;
+            }
+
+            .project-links {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .project-links a {
+                margin: 0;
+                text-align: center;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            h2 {
+                font-size: 1.3em;
+            }
+        }
+
+        @media screen and (min-width: 601px) and (max-width: 900px) {
+            body {
+                padding: 40px;
+            }
+
+            .info-card {
+                min-width: calc(50% - 20px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="home-button">
+            <svg class="home-icon" viewBox="0 0 24 24">
+                <path d="M9.005 16.545a2.997 2.997 0 012.997-2.997h0A2.997 2.997 0 0115 16.545V22h7V11.543L12 2 2 11.543V22h7.005z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"/>
+            </svg>
+            Home
+        </a>
+    </nav>
+    
+    <div class="header">
+        <h1>MORE ABOUT ME: NITEEH KUMAR</h1>
+        <p>Learn more about me and my projects details.</p>
+    </div>
+    
+    <div class="document-section">
+        <h2>Personal Information</h2>
+        <div class="personal-info">
+            <div class="info-card">
+                <h3>Personal Details</h3>
+                <p><strong>Name:</strong> Niteesh Kumar</p>
+                <p><strong>College:</strong> IEC College of Engineering & Technology</p>
+                <p><strong>University:</strong> Dr. APJ Abdul Kalam Technical University</p>
+                <p><strong>Branch:</strong> Computer Science & Engineering</p>
+            </div>
+            
+            <div class="info-card">
+                <h3>Contact Information</h3>
+                <p><strong>Email:</strong> niteeshkumar500@gmail.com</p>
+                <p><strong>Phone:</strong> +91 7217786935</p>
+                <p><strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/niteesh-kumar-43b534258/" target="_blank">linkedin.com/in/niteeshkumar</a></p>
+                <p><strong>GitHub:</strong> <a href="https://github.com/niteeshkumar500" target="_blank">github.com/niteeshkumar</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="document-section">
+        <h2>My Projects</h2>
+        <p>I have created projects using HTML, CSS, and JavaScript.</p>
+        
+        <ul>
+            <li>Responsive design for all screen sizes</li>
+            <li>Interactive donation system with UPI integration</li>
+            <li>Clipboard API for easy payment information sharing</li>
+        </ul>
+        
+        <div class="project-links">
+            <h3>Detailed Projects Report</h3>
+            <a href="instagram_project_details.html" target="_blank">Instagram Login Page</a>
+            <a href="ludo_project_details.html" target="_blank">Ludo Game</a>
+        </div>
+    </div>
+    
+    <div class="document-section">
+        <h2>Technical Specifications</h2>
+        
+        <h3>Technologies Used</h3>
+        <table>
+            <tr>
+                <th>Technology</th>
+                <th>Purpose</th>
+            </tr>
+            <tr>
+                <td>HTML5</td>
+                <td>Page structure and semantic markup</td>
+            </tr>
+            <tr>
+                <td>CSS3</td>
+                <td>Styling and responsive design</td>
+            </tr>
+            <tr>
+                <td>JavaScript</td>
+                <td>Interactive functionality</td>
+            </tr>
+            <tr>
+                <td>Clipboard API</td>
+                <td>UPI ID copy feature</td>
+            </tr>
+        </table>
+        
+        <h3>Key Features</h3>
+        <ul>
+            <li>Dark mode interface matching Instagram's design</li>
+            <li>Form validation for login fields</li>
+            <li>Animated popup for donation options</li>
+            <li>Cross-browser compatibility</li>
+        </ul>
+    </div>
+    
+    <footer>
+        <p>© 2025 Niteesh Kumar | Full Stack Developer</p>
+    </footer>
+</body>
+</html>

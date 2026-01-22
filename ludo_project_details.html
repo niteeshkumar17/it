@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>College Project Report: Ludo Game</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background: #f5f5f5;
+      color: #333;
+      line-height: 1.6;
+      padding-top: 60px;
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    header {
+      background: #5db8f5;
+      color: white;
+      padding: 30px 0;
+      text-align: center;
+      margin-bottom: 30px;
+      border-radius: 5px;
+    }
+    
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+    h2 {
+      color: #3498db;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 5px;
+      margin-top: 30px;
+    }
+    h3 {
+      color: #2980b9;
+    }
+    .project-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .project-info div {
+      flex: 1;
+    }
+    .screenshot {
+      text-align: center;
+      margin: 20px 0;
+    }
+    .screenshot img {
+      max-width: 100%;
+      border: 1px solid #ddd;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+    .feature {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      border-left: 4px solid #3498db;
+    }
+    .conclusion {
+      background-color: #e8f4fc;
+      padding: 20px;
+      border-radius: 5px;
+      margin-top: 30px;
+    }
+    footer {
+      text-align: center;
+      margin-top: 30px;
+      padding: 20px 0;
+      border-top: 1px solid #eee;
+      color: #7f8c8d;
+    }
+    .section {
+      background: white;
+      padding: 25px;
+      margin-bottom: 30px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #0095f6;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      z-index: 1000;
+      height: 60px;
+      box-sizing: border-box;
+      justify-content: space-between;
+    }
+    .home-button {
+      color: #fff;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+    .home-icon {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+    }
+    @media screen and (max-width: 1024px) {
+      .container {
+        max-width: 90%;
+        padding: 15px;
+      }
+      
+      .features {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      
+      .section {
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+    }
+    @media screen and (max-width: 768px) {
+      body {
+        padding-top: 60px;
+      }
+      
+      .container {
+        padding-top: 10px;
+      }
+      
+      header {
+        padding: 20px 0;
+        margin-bottom: 20px;
+      }
+      
+      h1 {
+        font-size: 24px;
+      }
+      
+      h2 {
+        font-size: 20px;
+      }
+      
+      h3 {
+        font-size: 18px;
+      }
+      
+      .project-info {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .section {
+        padding: 15px;
+      }
+    }
+    @media screen and (max-width: 480px) {
+      body {
+        padding-top: 55px;
+      }
+      
+      .container {
+        padding: 10px;
+        padding-top: 15px;
+      }
+      
+      header {
+        padding: 15px 0;
+      }
+      
+      h1 {
+        font-size: 20px;
+      }
+      
+      h2 {
+        font-size: 18px;
+      }
+      
+      h3 {
+        font-size: 16px;
+      }
+      
+      .feature {
+        padding: 12px;
+      }
+      
+      body {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="home-button">
+      <svg class="home-icon" viewBox="0 0 24 24">
+        <path d="M9.005 16.545a2.997 2.997 0 012.997-2.997h0A2.997 2.997 0 0115 16.545V22h7V11.543L12 2 2 11.543V22h7.005z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"/>
+      </svg>
+      <span>Home</span>
+    </a>
+  </nav>
+  
+  <div class="container">
+    <header>
+      <h1>Ludo Game Development</h1>
+      <p>A Web-based Interactive Game Project</p>
+    </header>
+
+    <div class="section">
+      <h2>1. Introduction</h2>
+      <p>This project involves the development of a fully functional Ludo game using HTML, CSS, and JavaScript. The digital version replicates all the key features of the physical game while adding digital enhancements for better user experience.</p>
+    </div>
+
+    <div class="section">
+      <h2>2. Project Objectives</h2>
+      <ul>
+        <li>To create an interactive digital version of the classic Ludo board game</li>
+        <li>To implement game logic using JavaScript</li>
+        <li>To design an attractive and responsive user interface</li>
+        <li>To support multiplayer functionality (2-4 players)</li>
+        <li>To implement all standard Ludo game rules and mechanics</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>3. Technologies Used</h2>
+      <ul>
+        <li><strong>HTML5:</strong> For structuring the game interface</li>
+        <li><strong>CSS3:</strong> For styling and responsive design</li>
+        <li><strong>JavaScript:</strong> For game logic and interactivity</li>
+        <li><strong>Git:</strong> For version control</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>4. Key Features</h2>
+      <div class="features">
+        <div class="feature">
+          <h3>Interactive Game Board</h3>
+          <p>Fully functional Ludo board with all standard paths, bases, and home areas.</p>
+        </div>
+        <div class="feature">
+          <h3>Multiplayer Support</h3>
+          <p>Supports 2-4 players with configurable player count.</p>
+        </div>
+        <div class="feature">
+          <h3>Dice Rolling</h3>
+          <p>Animated dice roll with random number generation.</p>
+        </div>
+        <div class="feature">
+          <h3>Token Movement</h3>
+          <p>Smooth token movement with path following logic.</p>
+        </div>
+        <div class="feature">
+          <h3>Game Rules</h3>
+          <p>Implements all standard Ludo rules including 6s, captures, and home entry.</p>
+        </div>
+        <div class="feature">
+          <h3>Responsive Design</h3>
+          <p>Works on different screen sizes from desktop to mobile.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>5. Implementation Details</h2>
+      <h3>Game Board Structure</h3>
+      <p>The game board is implemented using CSS Grid for precise positioning of all elements. The board consists of 15x15 grid cells that form the playing area, bases, and home paths.</p>
+
+      <h3>Game Logic</h3>
+      <p>The JavaScript code handles all game mechanics including:</p>
+      <ul>
+        <li>Player turns and token movement</li>
+        <li>Dice rolling and special rules for 6s</li>
+        <li>Token capturing and sending back to base</li>
+        <li>Home path movement and victory conditions</li>
+      </ul>
+
+      <h3>User Interface</h3>
+      <p>The UI includes a game board, player information panel, dice display, and game controls. The design uses a clean, colorful aesthetic with smooth animations for token movement.</p>
+    </div>
+
+    <div class="section">
+      <h2>6. Challenges Faced</h2>
+      <ul>
+        <li>Implementing the complex movement rules for different player paths</li>
+        <li>Handling token collisions and captures</li>
+        <li>Creating smooth animations for token movement</li>
+        <li>Making the game responsive for different screen sizes</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>7. Future Enhancements</h2>
+      <ul>
+        <li>Adding online multiplayer functionality</li>
+        <li>Implementing AI opponents for single-player mode</li>
+        <li>Adding sound effects and background music</li>
+        <li>Creating a game history and statistics feature</li>
+      </ul>
+    </div>
+
+    <div class="section conclusion">
+      <h2>8. Conclusion</h2>
+      <p>The Ludo Game project successfully demonstrates the implementation of a classic board game using web technologies. The project meets all the initial objectives and provides a fun, interactive gaming experience. Through this project, I gained valuable experience in game development, JavaScript programming, and responsive web design.</p>
+    </div>
+
+    <footer>
+      <p>&copy; 2025 Niteesh Kumar - Full Stack Developer</p>
+    </footer>
+  </div>
+</body>
+</html>

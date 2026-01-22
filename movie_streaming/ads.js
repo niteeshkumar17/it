@@ -1,37 +1,14 @@
-// ads.js - Ads Disabled
-// Set ADS_ENABLED to false to disable ads
-
-const ADS_ENABLED = false;
+// ads.js - PropellerAds/Adsterra Integration with Rate Limiting
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- Configuration ---
-    const POPUNDER_COOLDOWN = 90 * 1000; // 90 seconds
+    const POPUNDER_COOLDOWN = 60 * 1000; // 1 minute
     const ADSTERRA_POPUNDER_URL = 'https://zoologicalmanufacture.com/90/0b/f0/900bf089181de5a48c5513802b96b571.js';
+
+    // [NEW] Mobile Banner Configuration
+    // Go to Adsterra -> Create Ad Unit -> Select "300x250" or "Social Bar" -> Get the Script URL (src="...")
+    // Paste the URL inside the quotes below:
     const MOBILE_BANNER_SCRIPT_URL = 'https://zoologicalmanufacture.com/5e/e7/07/5ee70790e1828830343369cc1131861d.js'; // Social Bar
-
-    // Block all ads if disabled
-    if (!ADS_ENABLED) {
-        console.log('🚫 All Ads Blocked - ADS_ENABLED is set to false');
-        
-        // Block all popunders by overriding window.open
-        window.open = function () {
-            console.log('🚫 Popunder blocked');
-            return null;
-        };
-
-        // Hide all ad containers
-        const adContainers = ['ad-banner-top', 'ad-banner-middle', 'ad-banner-bottom'];
-        adContainers.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.style.display = 'none';
-            }
-        });
-
-        return; // Exit early, don't load any ads
-    }
-
-    // --- Below code only runs if ADS_ENABLED = true ---
 
     // --- 1. Rate Limited Popunder Logic ---
     const originalOpen = window.open;
