@@ -1,0 +1,7 @@
+{
+    "version": "1.0.0",
+    "minVersion": "1.0.0",
+    "updateUrl": "https://github.com/niteeshkumar17/movie-streaming/releases",
+    "message": "A new version is available. Please update to continue using Shaaka.",
+    "forceUpdate": true
+}

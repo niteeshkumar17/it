@@ -1,0 +1,9 @@
+node_modules/
+.gradle/
+build/
+*.apk
+*.aab
+*.keystore
+local.properties
+.idea/
+*.iml
